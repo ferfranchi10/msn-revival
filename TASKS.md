@@ -19,7 +19,16 @@
 
 ## FASE 1 — Sistema de usuarios
 
-- [ ] Registro, login, logout, sesión persistente, perfil, username único, avatar, estado, mensaje personal.
+- [x] Registro (nombre, username, email, contraseña, avatar).
+- [x] Username único (colección espejo `usernames/{usernameLower}`, con rollback de la
+      cuenta de Auth si se ocupa justo en el medio).
+- [x] Login (email + contraseña).
+- [x] Logout.
+- [x] Sesión persistente (persistencia por defecto de Firebase Auth).
+- [x] Perfil: ver y editar nombre, avatar, estado (manual, no presencia real), mensaje personal.
+- [x] Reglas de seguridad de Firestore publicadas (`users` y `usernames`).
+- [ ] Variables de entorno de Firebase cargadas en Vercel (necesario para que Auth/Firestore
+      funcionen en producción, no solo en local) — pendiente antes del próximo deploy.
 
 ## FASE 2 — Contactos
 

@@ -2,7 +2,9 @@
 
 ## Fase actual
 
-**FASE 0 — Preparación: completada.** Lista para arrancar FASE 1 (sistema de usuarios) cuando el usuario lo confirme.
+**FASE 1 — Sistema de usuarios: completada y verificada en el navegador** (registro,
+login, logout, sesión persistente, perfil editable, username único). Lista para
+arrancar FASE 2 (contactos) cuando el usuario lo confirme.
 
 ## Decisiones tomadas
 
@@ -20,9 +22,23 @@
   Realtime Database creado (modo bloqueado) — usado para presencia online/offline.
 - Backend/datos: Firebase (Auth + Firestore + Realtime Database para presencia).
 - Claves de Firebase cargadas en `.env.local` (no en el repo). Todavía no cargadas
-  como env vars del proyecto en Vercel — no urgente hasta que el código use el SDK
-  de Firebase (FASE 1), pero hay que recordarlo antes de que la app en producción
-  necesite login real.
+  como env vars del proyecto en Vercel — el código ya usa el SDK de Firebase (desde
+  FASE 1), así que esto ahora sí es necesario antes de que el login funcione en
+  producción (https://msn-revival.vercel.app).
+- Reglas de seguridad de Firestore publicadas manualmente en la consola de Firebase
+  (no hay un archivo `firestore.rules` en el repo ni Firebase CLI configurado
+  todavía). El contenido exacto está documentado en el plan de FASE 1
+  (`C:\Users\ferna\.claude\plans\witty-weaving-sunbeam.md`) — colecciones `users`
+  (cada usuario solo puede crear/editar su propio doc, username no editable) y
+  `usernames` (mapea username→uid para unicidad, solo creación, nunca update/delete).
+- Modelo de datos Fase 1: `users/{uid}` (displayName, username, usernameLower, email,
+  avatarId, status manual, personalMessage, activity, isOnline/lastSeen reservados
+  para FASE 3) y `usernames/{usernameLower}` → `{ uid }`.
+- Avatar: selector fijo de 8 íconos retro propios (`src/lib/avatars.ts`), sin subida
+  de archivos ni Firebase Storage todavía.
+- Estado (`status`) en Fase 1 es un valor manual elegido por el usuario en su perfil
+  (Disponible/Ausente/No molestar/Invisible) — no es presencia real online/offline,
+  eso es FASE 3 (Realtime Database, heartbeat, evento `friend_online`).
 
 ## Archivos clave
 
@@ -38,5 +54,6 @@
 
 ## Pendiente / en manos del usuario
 
-- Crear proyecto Firebase nuevo y activar Authentication + Firestore + Realtime Database.
-- Cargar las claves de Firebase en `.env.local` (local) y en las env vars del proyecto Vercel (producción).
+- Cargar las claves de Firebase como env vars del proyecto en Vercel (producción) —
+  sin esto, el login/registro no va a funcionar en `msn-revival.vercel.app` aunque
+  sí funcione en local.
