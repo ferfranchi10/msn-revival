@@ -10,11 +10,12 @@
 - [x] `git init` local + primer commit.
 - [x] Repo en GitHub creado (`ferfranchi10/msn-revival`).
 - [x] Proyecto Vercel creado e importado desde GitHub.
-- [ ] Proyecto Firebase creado (Authentication + Firestore + Realtime Database activados).
-- [ ] Variables de entorno de Firebase cargadas en `.env.local` (local) y en Vercel (producción).
-- [ ] Primer `git push` al repo remoto.
-- [ ] Primer deploy real en Vercel con la app funcionando (no solo el import vacío).
-- [ ] Confirmar: app corre en local (`npm run dev`) y en la URL de Vercel.
+- [x] Proyecto Firebase creado (Authentication + Firestore + Realtime Database activados).
+- [x] Variables de entorno de Firebase cargadas en `.env.local` (local).
+- [ ] Variables de entorno de Firebase cargadas también en Vercel (producción) — pendiente.
+- [x] Primer `git push` al repo remoto.
+- [x] Primer deploy real en Vercel con la app funcionando (no solo el import vacío).
+- [x] Confirmar: app corre en local (`npm run dev`) y en la URL de Vercel (https://msn-revival.vercel.app).
 
 ## FASE 1 — Sistema de usuarios
 
