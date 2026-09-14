@@ -5,6 +5,11 @@ import { doc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { HeroLogoBox } from "@/components/HeroLogoBox";
+import { LogoMark } from "@/components/LogoMark";
+import { RetroButton } from "@/components/RetroButton";
+import { RetroField } from "@/components/RetroField";
+import { RetroWindow } from "@/components/RetroWindow";
 import { AVATARS, DEFAULT_AVATAR_ID } from "@/lib/avatars";
 import { auth, db } from "@/lib/firebase";
 import { DEFAULT_STATUS } from "@/lib/status";
@@ -110,93 +115,91 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-gradient-to-b from-sky-100 to-sky-200 px-4 py-10">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-2xl bg-white/90 p-8 shadow-lg"
-      >
-        <h1 className="mb-1 text-center text-2xl font-semibold text-sky-700">MSN Revival</h1>
-        <p className="mb-6 text-center text-sm text-sky-900/60">Crear cuenta</p>
+    <div className="flex min-h-screen w-full flex-1 justify-center overflow-y-auto bg-black px-4 py-10">
+      <RetroWindow title="MSN Revival">
+        <div className="mb-5 flex items-center gap-2">
+          <LogoMark size={20} />
+          <p className="text-[16px] leading-none">
+            <span className="font-bold text-[#2E5F9E]">MSN</span>{" "}
+            <span className="font-semibold text-[#33445A]">Revival</span>
+          </p>
+        </div>
 
-        <label className="mb-3 block text-sm text-sky-900/80">
-          Nombre
-          <input
+        <div className="mb-6">
+          <HeroLogoBox size={96} />
+        </div>
+
+        <p className="mb-5 text-center text-[15px] text-[#33445A]">Crear una cuenta nueva</p>
+
+        <form onSubmit={handleSubmit} className="mx-auto w-full max-w-[360px]">
+          <RetroField
+            label="Nombre:"
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-sky-200 px-3 py-2 text-sky-900 focus:border-sky-400 focus:outline-none"
             placeholder="Fernando"
           />
-        </label>
 
-        <label className="mb-3 block text-sm text-sky-900/80">
-          Username
-          <input
+          <RetroField
+            label="Username:"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-sky-200 px-3 py-2 text-sky-900 focus:border-sky-400 focus:outline-none"
             placeholder="fernando99"
           />
-        </label>
 
-        <label className="mb-3 block text-sm text-sky-900/80">
-          Email
-          <input
+          <RetroField
+            label="E-mail:"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-sky-200 px-3 py-2 text-sky-900 focus:border-sky-400 focus:outline-none"
             placeholder="vos@ejemplo.com"
           />
-        </label>
 
-        <label className="mb-4 block text-sm text-sky-900/80">
-          Contraseña
-          <input
+          <RetroField
+            label="Contraseña:"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-sky-200 px-3 py-2 text-sky-900 focus:border-sky-400 focus:outline-none"
             placeholder="Mínimo 6 caracteres"
           />
-        </label>
 
-        <p className="mb-2 text-sm text-sky-900/80">Avatar</p>
-        <div className="mb-4 flex flex-wrap gap-2">
-          {AVATARS.map((avatar) => (
-            <button
-              key={avatar.id}
-              type="button"
-              onClick={() => setAvatarId(avatar.id)}
-              className={`flex h-10 w-10 items-center justify-center rounded-full text-lg transition ${
-                avatarId === avatar.id ? "ring-2 ring-sky-500 ring-offset-2" : ""
-              }`}
-              style={{ backgroundColor: avatar.bg }}
-              aria-label={avatar.id}
-            >
-              {avatar.emoji}
-            </button>
-          ))}
-        </div>
+          <p className="mb-2 text-[15px] text-[#1F2D3D]">Avatar</p>
+          <div className="mb-5 flex flex-wrap gap-2">
+            {AVATARS.map((avatar) => (
+              <button
+                key={avatar.id}
+                type="button"
+                onClick={() => setAvatarId(avatar.id)}
+                className={`flex h-10 w-10 items-center justify-center rounded-full border text-lg transition ${
+                  avatarId === avatar.id
+                    ? "border-[#2E5F9E] ring-2 ring-[#2E5F9E] ring-offset-2"
+                    : "border-[#A7B0BE]"
+                }`}
+                style={{ backgroundColor: avatar.bg }}
+                aria-label={avatar.id}
+              >
+                {avatar.emoji}
+              </button>
+            ))}
+          </div>
 
-        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+          {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-full bg-sky-600 py-2 font-medium text-white transition hover:bg-sky-700 disabled:opacity-60"
-        >
-          {submitting ? "Creando cuenta..." : "Crear cuenta"}
-        </button>
+          <div className="flex justify-center">
+            <RetroButton type="submit" disabled={submitting} className="w-48">
+              {submitting ? "Creando cuenta..." : "Crear cuenta"}
+            </RetroButton>
+          </div>
 
-        <p className="mt-4 text-center text-sm text-sky-900/70">
-          ¿Ya tenés cuenta?{" "}
-          <Link href="/login" className="font-medium text-sky-700 underline">
-            Iniciar sesión
-          </Link>
-        </p>
-      </form>
+          <p className="mt-6 text-center text-[14px] text-[#33445A]">
+            ¿Ya tenés cuenta?{" "}
+            <Link href="/login" className="text-[#2E5F9E] underline">
+              Iniciar sesión
+            </Link>
+          </p>
+        </form>
+      </RetroWindow>
     </div>
   );
 }
