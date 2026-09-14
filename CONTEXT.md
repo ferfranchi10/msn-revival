@@ -54,6 +54,6 @@ arrancar FASE 2 (contactos) cuando el usuario lo confirme.
 
 ## Pendiente / en manos del usuario
 
-- Cargar las claves de Firebase como env vars del proyecto en Vercel (producción) —
-  sin esto, el login/registro no va a funcionar en `msn-revival.vercel.app` aunque
-  sí funcione en local.
+- (Nada pendiente de FASE 1. Env vars de Firebase cargadas en Vercel como tipo
+  "Config" — no "Secret", porque al ser `NEXT_PUBLIC_*` igual quedan expuestas en
+  el navegador — y verificado login real en producción.)

@@ -27,8 +27,8 @@
 - [x] Sesión persistente (persistencia por defecto de Firebase Auth).
 - [x] Perfil: ver y editar nombre, avatar, estado (manual, no presencia real), mensaje personal.
 - [x] Reglas de seguridad de Firestore publicadas (`users` y `usernames`).
-- [ ] Variables de entorno de Firebase cargadas en Vercel (necesario para que Auth/Firestore
-      funcionen en producción, no solo en local) — pendiente antes del próximo deploy.
+- [x] Variables de entorno de Firebase cargadas en Vercel y verificadas: login funciona
+      en producción (https://msn-revival.vercel.app).
 
 ## FASE 2 — Contactos
 
