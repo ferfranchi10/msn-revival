@@ -32,7 +32,19 @@
 
 ## FASE 2 — Contactos
 
-- [ ] Buscar usuarios, solicitudes, aceptar/rechazar, lista de amigos, eliminar, bloquear.
+- [x] Buscar usuarios por username (prefijo, colección `users`).
+- [x] Enviar solicitud de amistad.
+- [x] Recibir solicitud (sección "Solicitudes recibidas").
+- [x] Aceptar solicitud.
+- [x] Rechazar / cancelar solicitud.
+- [x] Lista de amigos.
+- [x] Eliminar amigo.
+- [x] Bloquear / desbloquear amigo.
+- [x] Reglas de seguridad de Firestore para `friendships` publicadas.
+- [x] Verificado en el navegador con dos cuentas de prueba (flujo completo:
+      buscar → solicitud → aceptar → amigos → bloquear → desbloquear →
+      rechazar → eliminar). Pendiente: verificar también en producción
+      (Vercel) cuando el usuario haga el deploy.
 
 ## FASE 3 — Presencia MSN
 

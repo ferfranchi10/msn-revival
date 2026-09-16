@@ -2,9 +2,10 @@
 
 ## Fase actual
 
-**FASE 1 — Sistema de usuarios: completada y verificada en el navegador** (registro,
-login, logout, sesión persistente, perfil editable, username único). Lista para
-arrancar FASE 2 (contactos) cuando el usuario lo confirme.
+**FASE 2 — Contactos: completada y verificada en el navegador local** (buscar por
+username, enviar/recibir solicitud, aceptar, rechazar, lista de amigos, eliminar,
+bloquear, desbloquear). Falta verificar en producción (Vercel) cuando se haga el
+deploy. Lista para arrancar FASE 3 (presencia real) cuando el usuario lo confirme.
 
 ## Decisiones tomadas
 
@@ -39,6 +40,27 @@ arrancar FASE 2 (contactos) cuando el usuario lo confirme.
 - Estado (`status`) en Fase 1 es un valor manual elegido por el usuario en su perfil
   (Disponible/Ausente/No molestar/Invisible) — no es presencia real online/offline,
   eso es FASE 3 (Realtime Database, heartbeat, evento `friend_online`).
+- **FASE 2 — Contactos**: nueva colección `friendships/{friendshipId}` en
+  Firestore. Dos decisiones de implementación (no vienen literal del spec):
+  - `friendshipId` es determinístico: `[uidA, uidB].sort().join("_")` (no un id
+    autogenerado), para que no pueda existir más de un doc por par de usuarios y
+    para que las reglas de seguridad sean simples de validar.
+  - Solo 3 estados (`pending | accepted | blocked`), no 4: se quita `rejected`
+    del spec porque rechazar una solicitud se implementa como `deleteDoc` del
+    documento pendiente (no hace falta persistir un estado "rechazada").
+  - Campo extra `blockedBy` (uid de quien bloqueó) para que solo esa persona
+    pueda desbloquear/eliminar el documento bloqueado.
+  - `/contactos` pasa a ser la pantalla de aterrizaje post-login (antes era
+    `/perfil`); `/perfil` ahora tiene un link "← Contactos" para volver.
+  - Reglas de Firestore para `friendships` publicadas manualmente en la consola
+    (mismo criterio que Fase 1, no hay `firestore.rules` en el repo). El
+    contenido exacto queda documentado en el plan de FASE 2
+    (`C:\Users\ferna\.claude\plans\dazzling-sparking-milner.md`).
+  - Verificado en `npm run dev` con dos cuentas de prueba
+    (`anaprueba2@example.com` / `brunoprueba2@example.com`, contraseña
+    `prueba123`) recorriendo el flujo completo. Esas cuentas de prueba quedaron
+    creadas en el Firebase real (`msn-revival-df50c`); se pueden borrar desde
+    la consola si no se quieren conservar.
 
 ## Archivos clave
 

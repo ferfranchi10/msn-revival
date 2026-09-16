@@ -2,6 +2,7 @@
 
 import { signOut } from "firebase/auth";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -75,12 +76,17 @@ export default function PerfilPage() {
   return (
     <div className="flex min-h-screen w-full flex-1 justify-center overflow-y-auto bg-black px-4 py-10">
       <RetroWindow title="MSN Revival">
-        <div className="mb-5 flex items-center gap-2">
-          <LogoMark size={20} />
-          <p className="text-[16px] leading-none">
-            <span className="font-bold text-[#2E5F9E]">MSN</span>{" "}
-            <span className="font-semibold text-[#33445A]">Revival</span>
-          </p>
+        <div className="mb-5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <LogoMark size={20} />
+            <p className="text-[16px] leading-none">
+              <span className="font-bold text-[#2E5F9E]">MSN</span>{" "}
+              <span className="font-semibold text-[#33445A]">Revival</span>
+            </p>
+          </div>
+          <Link href="/contactos" className="text-[13px] text-[#2E5F9E] underline">
+            ← Contactos
+          </Link>
         </div>
 
         <p className="mb-5 text-[15px] text-[#33445A]">@{profile.username}</p>
