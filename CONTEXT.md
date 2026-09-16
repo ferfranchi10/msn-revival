@@ -314,6 +314,30 @@ producción (https://msn-revival.vercel.app). El resto de FASE 6
     Para que llegue a la bandeja principal del grupo de amigos, verificar un
     dominio propio en Resend (Dashboard > Domains) y cambiar `EMAIL_FROM` a un
     remitente de ese dominio.
+  - **Bug encontrado y corregido en el primer registro real en producción**
+    (PR #3 mergeado, cargadas las 5 env vars en Vercel): `/api/send-welcome-email`
+    tiraba 500. El log real de Vercel mostraba `Error [ERR_REQUIRE_ESM]` al
+    cargar `firebase-admin`. Costó dos vueltas:
+    1. Primer intento (PR #4): se asumió que Turbopack estaba empaquetando
+       `firebase-admin` dentro de la función serverless y rompiendo ahí; se
+       agregó `serverExternalPackages: ["firebase-admin"]` en `next.config.ts`.
+       No alcanzó — mismo error exacto después de mergear y volver a probar.
+    2. Causa real (PR #5): `jose` (dependencia transitiva de `firebase-admin`
+       vía `jwks-rsa`) pasó a ser un paquete **solo ESM** en sus versiones
+       recientes (v5+), y `jwks-rsa@4.1.0` todavía lo importa con `require()`
+       de forma síncrona — rompe en el runtime de funciones de Vercel (no en
+       `next dev` local, que resuelve distinto). Fix: `overrides.jose =
+       "4.15.5"` en `package.json` (última versión de `jose` con build CJS).
+       El `serverExternalPackages` del intento anterior se dejó (no molesta).
+    - Como el preview deploy de Vercel queda atrás de su propia protección
+      (401 sin credenciales), cada intento se verificó mergeando a `main` y
+      probando `POST /api/send-welcome-email` directo contra
+      `https://msn-revival.vercel.app` con PowerShell — de bajo riesgo porque
+      solo afecta ese endpoint nuevo, no el resto de la app.
+    - **Verificado en producción real** después del segundo fix: `200 OK` y
+      el usuario confirmó que llegó el mail. Cuenta de prueba
+      (`fertestprod01@`/`axentia.consulting@gmail.com`, creada durante estas
+      pruebas) borrada con el mismo patrón de script descartable + Admin SDK.
 
 ## Archivos clave
 
@@ -335,8 +359,8 @@ producción (https://msn-revival.vercel.app). El resto de FASE 6
 - FASE 3: reglas de Realtime Database ya pegadas y publicadas en la consola de
   Firebase por el usuario. Falta verificar la presencia real en producción
   (Vercel) cuando se haga el próximo deploy.
-- Email de bienvenida/verificación: verificado de punta a punta en local (ver
-  detalle arriba). Falta cargar las 5 variables (`FIREBASE_ADMIN_*` ×3,
-  `RESEND_API_KEY`, `EMAIL_FROM`) en Vercel para que funcione en producción, y
-  verificar un dominio propio en Resend para que no caiga en spam / se pueda
-  mandar a cualquier destinatario (no solo al dueño de la cuenta de Resend).
+- Email de bienvenida/verificación: **verificado de punta a punta en producción**
+  (`https://msn-revival.vercel.app`), incluyendo el fix del bug de `jose`/ESM
+  (ver detalle arriba). Falta verificar un dominio propio en Resend para que
+  no caiga en spam / se pueda mandar a cualquier destinatario (no solo al
+  dueño de la cuenta de Resend) — pendiente, a definir cuándo se hace.
