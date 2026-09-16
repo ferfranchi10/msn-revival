@@ -90,6 +90,13 @@ export default function RegistroPage() {
           updatedAt: serverTimestamp(),
         });
         await batch.commit();
+
+        // Envío best-effort: si el proveedor de email falla, no debe bloquear el registro.
+        fetch("/api/send-welcome-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim(), displayName: trimmedName }),
+        }).catch((emailErr) => console.error("welcome email error", emailErr));
       } catch (innerErr) {
         // Username tomado (por el chequeo de arriba, o por una carrera justo contra
         // la escritura): revertimos la cuenta de Auth recién creada para no dejar

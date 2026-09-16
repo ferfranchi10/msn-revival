@@ -266,6 +266,55 @@ producción (https://msn-revival.vercel.app). El resto de FASE 6
     con `anaprueba2`/`brunoprueba2`: al enviar un mensaje desde un lado, el
     otro lado hace un `GET /sounds/message.mp3` inmediatamente después.
 
+- **Email de bienvenida/verificación (adelanto fuera de fase, a pedido explícito del
+  usuario, no está en la spec del MVP)**: se dispara automáticamente al registrarse
+  (`src/app/registro/page.tsx`, `fetch` a `/api/send-welcome-email` justo después de
+  crear el perfil en Firestore, sin bloquear el registro si el email falla — es
+  best-effort). Decisiones (no vienen literal de ningún pedido anterior):
+  - Las plantillas nativas de Firebase Auth (consola > Authentication > Templates)
+    no permiten HTML/CSS propio (el pedido era replicar la estética exacta de
+    `RetroWindow`), así que se necesitó infraestructura nueva: **Firebase Admin SDK**
+    (`src/lib/firebaseAdmin.ts`, server-only) para generar el link de verificación
+    (`generateEmailVerificationLink`) + **Resend** para enviar el HTML propio
+    (`src/app/api/send-welcome-email/route.ts`). Es la primera vez que el proyecto
+    tiene un endpoint server-side propio (`/api/...`) y un secreto que no es
+    `NEXT_PUBLIC_*`.
+  - Plantilla en `src/lib/welcomeEmail.ts` (HTML con tablas, por compatibilidad con
+    clientes de correo, + versión texto plano): reutiliza la paleta de
+    `src/lib/theme.ts` para que la barra de título/menú/botón se vean igual que la
+    ventana de la app. El logo se sirve desde la ruta ya existente `/icon`.
+  - El usuario ya creó la cuenta de Resend y la clave de cuenta de servicio de
+    Firebase, cargadas en `.env.local`. También hubo que agregar
+    `msn-revival.vercel.app` a Authentication > Settings > Authorized domains en
+    la consola de Firebase (si no, `generateEmailVerificationLink` tira
+    `auth/unauthorized-continue-uri`) — paso manual ya hecho por el usuario.
+    Para producción falta cargar las mismas 5 variables en Vercel (marcadas
+    "Sensitive").
+  - **Verificado de punta a punta en local** (`npm run dev`, registro real con
+    la cuenta de prueba `axentia.consulting@gmail.com` — el email del dueño de
+    la cuenta de Resend, porque el remitente de prueba `onboarding@resend.dev`
+    solo entrega a esa casilla): el registro dispara el email, llega el HTML con
+    el diseño de `RetroWindow` y el botón de verificación funciona. Las cuentas
+    de prueba creadas durante la verificación se borraron con un script
+    descartable que usó el Admin SDK recién configurado (ya no quedan cuentas de
+    prueba sueltas en el Firebase real).
+  - **Bug encontrado y corregido durante la verificación**: en Gmail (app,
+    modo oscuro) el texto del cuerpo se veía casi invisible (texto claro sobre
+    fondo claro) — Gmail reescribe colores de emails que no declaran
+    explícitamente que están diseñados solo para modo claro. Se agregó
+    `<meta name="color-scheme" content="light only">` +
+    `<meta name="supported-color-schemes" content="light only">` y un bloque
+    `<style>` en el `<head>` con reglas `[data-ogsc] ...! important` (el hook
+    que usa Gmail para detectar modo oscuro) que reafirman los mismos colores
+    del diseño original. Verificado reenviando el mail real y confirmado por
+    el usuario en la app de Gmail.
+  - **Pendiente, no depende del código**: el primer envío cayó en spam (normal
+    para un remitente de prueba `onboarding@resend.dev` sin dominio propio
+    verificado — sin SPF/DKIM/DMARC alineados a un dominio real, es esperable).
+    Para que llegue a la bandeja principal del grupo de amigos, verificar un
+    dominio propio en Resend (Dashboard > Domains) y cambiar `EMAIL_FROM` a un
+    remitente de ese dominio.
+
 ## Archivos clave
 
 - [PROJECT_MSN_Revival_MVP.md](PROJECT_MSN_Revival_MVP.md) — spec completa del MVP (visión, pantallas, modelo de datos, fases).
@@ -286,3 +335,8 @@ producción (https://msn-revival.vercel.app). El resto de FASE 6
 - FASE 3: reglas de Realtime Database ya pegadas y publicadas en la consola de
   Firebase por el usuario. Falta verificar la presencia real en producción
   (Vercel) cuando se haga el próximo deploy.
+- Email de bienvenida/verificación: verificado de punta a punta en local (ver
+  detalle arriba). Falta cargar las 5 variables (`FIREBASE_ADMIN_*` ×3,
+  `RESEND_API_KEY`, `EMAIL_FROM`) en Vercel para que funcione en producción, y
+  verificar un dominio propio en Resend para que no caiga en spam / se pueda
+  mandar a cualquier destinatario (no solo al dueño de la cuenta de Resend).
