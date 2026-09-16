@@ -73,8 +73,11 @@
 - [x] Indicador "está escribiendo..." (Realtime Database, mismo criterio que la presencia).
 - [x] Reglas de seguridad de Firestore para `conversations`/`messages` publicadas
       (solo entre amigos aceptados) y de Realtime Database para `typing`.
-- [x] Verificado con dos cuentas reales en paralelo: mensajes en tiempo real en
-      ambos sentidos, indicador de escritura, emoticonos.
+- [x] Verificado con dos cuentas reales en paralelo, en local y en producción
+      (https://msn-revival.vercel.app): mensajes en tiempo real en ambos
+      sentidos, indicador de escritura, emoticonos. Bug encontrado en
+      producción (reglas de Firestore rechazaban el segundo mensaje en
+      adelante) y corregido — detalle en CONTEXT.md.
 - [ ] Estado de entrega (recibos de lectura por mensaje) — no implementado, ver
       recorte de alcance en CONTEXT.md.
 

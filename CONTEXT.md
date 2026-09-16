@@ -3,10 +3,9 @@
 ## Fase actual
 
 **FASE 4 (chat en tiempo real) + parte visual de FASE 7 (emoticonos y estética):
-completadas y verificadas en el navegador local**, adelantadas fuera de orden a
-pedido explícito del usuario (ver decisión detallada abajo). Falta verificar en
-producción (Vercel) cuando se haga el deploy. FASE 5 (zumbido) y FASE 6
-(notificaciones) siguen pendientes, sin adelantar.
+completadas y verificadas en local Y en producción** (https://msn-revival.vercel.app),
+adelantadas fuera de orden a pedido explícito del usuario (ver decisión detallada
+abajo). FASE 5 (zumbido) y FASE 6 (notificaciones) siguen pendientes, sin adelantar.
 
 ## Decisiones tomadas
 
@@ -170,6 +169,20 @@ producción (Vercel) cuando se haga el deploy. FASE 5 (zumbido) y FASE 6
     espacio restante con scroll interno — corrige que antes la ventana se
     achicaba al contenido dejando fondo negro suelto cuando había pocos
     contactos (reportado por el usuario durante la verificación).
+  - **Bug encontrado en producción** (no se manifestó en local porque ahí solo
+    se había enviado un mensaje por conversación): `sendMessage()` hace
+    `setDoc(conversations/{id}, {participants}, {merge:true})` en **cada**
+    envío. El primer mensaje de una conversación crea ese doc (`create`), pero
+    del segundo mensaje en adelante Firestore lo trata como `update` sobre un
+    doc ya existente — y las reglas solo permitían `create`, no `update`,
+    causando `permission-denied` a partir del segundo mensaje. Se corrigió
+    unificando esas dos reglas en una sola `allow write` (el doc de conversación
+    es metadata inmutable — `participants` nunca cambia — así que permitir el
+    re-`merge` es seguro). Verificado en producción con múltiples mensajes en
+    la misma conversación después del fix.
+  - **Verificado en producción** (https://msn-revival.vercel.app) con las
+    cuentas de prueba reales: login, rediseño, presencia, y chat en tiempo real
+    en ambos sentidos (incluyendo el fix del bug de arriba).
 
 ## Archivos clave
 
