@@ -23,6 +23,8 @@ export default function PerfilPage() {
   const [status, setStatus] = useState<UserStatus>("online");
   const [personalMessage, setPersonalMessage] = useState("");
   const [notifyFriendOnline, setNotifyFriendOnline] = useState(true);
+  const [notifyNudge, setNotifyNudge] = useState(true);
+  const [notifyNewMessage, setNotifyNewMessage] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const initialized = useRef(false);
@@ -40,6 +42,8 @@ export default function PerfilPage() {
       setStatus(profile.status);
       setPersonalMessage(profile.personalMessage);
       setNotifyFriendOnline(profile.notifyFriendOnline ?? true);
+      setNotifyNudge(profile.notifyNudge ?? true);
+      setNotifyNewMessage(profile.notifyNewMessage ?? true);
       initialized.current = true;
     }
   }, [profile]);
@@ -55,6 +59,8 @@ export default function PerfilPage() {
         status,
         personalMessage: personalMessage.trim(),
         notifyFriendOnline,
+        notifyNudge,
+        notifyNewMessage,
         updatedAt: serverTimestamp(),
       });
       setSavedAt(Date.now());
@@ -156,6 +162,26 @@ export default function PerfilPage() {
               className="h-4 w-4"
             />
             Avisarme cuando mis amigos se conecten
+          </label>
+
+          <label className="mb-5 flex items-center gap-2 text-[14px] text-[#1F2D3D]">
+            <input
+              type="checkbox"
+              checked={notifyNudge}
+              onChange={(e) => setNotifyNudge(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Avisarme (sonido, temblor y aviso) cuando me envíen un zumbido
+          </label>
+
+          <label className="mb-5 flex items-center gap-2 text-[14px] text-[#1F2D3D]">
+            <input
+              type="checkbox"
+              checked={notifyNewMessage}
+              onChange={(e) => setNotifyNewMessage(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Reproducir sonido cuando me llega un mensaje nuevo
           </label>
 
           {savedAt && <p className="mb-3 text-sm text-emerald-700">Perfil guardado.</p>}

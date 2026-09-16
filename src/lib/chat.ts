@@ -2,6 +2,10 @@ import {
   addDoc,
   collection,
   doc,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
   type Timestamp,
@@ -27,5 +31,22 @@ export async function sendMessage(conversationId: string, participants: [string,
     senderId,
     text,
     createdAt: serverTimestamp(),
+  });
+}
+
+/** Escucha el último mensaje de una conversación (usado para el sonido de "mensaje nuevo"). */
+export function subscribeToLatestMessage(
+  conversationId: string,
+  callback: (message: Message) => void
+): () => void {
+  const q = query(
+    collection(db, "conversations", conversationId, "messages"),
+    orderBy("createdAt", "desc"),
+    limit(1)
+  );
+  return onSnapshot(q, (snapshot) => {
+    const docSnap = snapshot.docs[0];
+    if (!docSnap) return;
+    callback({ id: docSnap.id, ...docSnap.data() } as Message);
   });
 }
