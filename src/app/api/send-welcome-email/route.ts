@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { getAdminAuth } from "@/lib/firebaseAdmin";
+import { getMailFrom, getMailTransporter } from "@/lib/mailer";
 import { buildWelcomeEmailHtml, buildWelcomeEmailText, SITE_URL } from "@/lib/welcomeEmail";
 
 export async function POST(request: Request) {
@@ -21,21 +21,15 @@ export async function POST(request: Request) {
       url: `${SITE_URL}/login`,
     });
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
     const name = typeof displayName === "string" ? displayName : "";
 
-    const { error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? "MSN Revival <onboarding@resend.dev>",
+    await getMailTransporter().sendMail({
+      from: getMailFrom(),
       to: email.trim(),
       subject: "Bienvenido de vuelta a aquella época 💙",
       html: buildWelcomeEmailHtml({ displayName: name, verifyLink }),
       text: buildWelcomeEmailText({ displayName: name, verifyLink }),
     });
-
-    if (error) {
-      console.error("resend error", error);
-      return NextResponse.json({ error: "No se pudo enviar el email" }, { status: 502 });
-    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
