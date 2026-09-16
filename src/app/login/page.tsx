@@ -67,7 +67,7 @@ export default function LoginPage() {
       } else {
         window.localStorage.removeItem(REMEMBER_EMAIL_KEY);
       }
-      router.push("/perfil");
+      router.push("/contactos");
     } catch (err) {
       const code = err instanceof Error && "code" in err ? String((err as { code: string }).code) : "";
       setError(friendlyAuthError(code));
