@@ -13,9 +13,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://msn-revival.vercel.app";
+const DESCRIPTION = "Un mensaje hacia la nostalgia.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "MSN Revival",
-  description: "Mensajería instantánea retro para un grupo cerrado de amigos.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: "MSN Revival",
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "MSN Revival",
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MSN Revival",
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
