@@ -48,11 +48,35 @@
 
 ## FASE 3 — Presencia MSN
 
-- [ ] Online/offline/ausente/no molestar/invisible, last seen, heartbeat, evento `friend_online`.
+- [x] Online/ausente/no molestar/invisible (manual, Fase 1) combinado con conexión
+      real (Realtime Database) → desconectado automático si se cierra la pestaña o
+      se corta la red.
+- [x] Invisible: aparece desconectado para los demás.
+- [x] Last seen (mostrado en la fila del contacto cuando está desconectado).
+- [x] Heartbeat / detección de desconexión y reconexión (`.info/connected` +
+      `onDisconnect` de Realtime Database).
+- [x] Anti-spam de presencia (debounce de 6 s antes de marcar offline en la UI y
+      en las notificaciones).
+- [x] Evento "amigo conectado": toast + sonido retro propio (sintetizado), con
+      toggle ON/OFF en el perfil (`notifyFriendOnline`, default ON).
+- [x] Reglas de seguridad de Realtime Database publicadas.
+- [x] Verificado con dos cuentas reales en paralelo (Browser pane + Chrome):
+      conexión, desconexión real (cierre de pestaña), reconexión con evento y
+      sonido, e invisibilidad. Pendiente: verificar también en producción
+      (Vercel) cuando el usuario haga el deploy.
 
 ## FASE 4 — Chat en tiempo real
 
-- [ ] Conversaciones, mensajes en tiempo real, historial, timestamp, estado de entrega, "escribiendo...".
+- [x] Conversaciones y mensajes en tiempo real (Firestore: `conversations/{id}/messages`).
+- [x] Historial (persistido, se recarga al reabrir el chat).
+- [x] Timestamp por mensaje.
+- [x] Indicador "está escribiendo..." (Realtime Database, mismo criterio que la presencia).
+- [x] Reglas de seguridad de Firestore para `conversations`/`messages` publicadas
+      (solo entre amigos aceptados) y de Realtime Database para `typing`.
+- [x] Verificado con dos cuentas reales en paralelo: mensajes en tiempo real en
+      ambos sentidos, indicador de escritura, emoticonos.
+- [ ] Estado de entrega (recibos de lectura por mensaje) — no implementado, ver
+      recorte de alcance en CONTEXT.md.
 
 ## FASE 5 — Zumbido
 
@@ -64,7 +88,11 @@
 
 ## FASE 7 — Emoticonos y estética
 
-- [ ] Pack propio de emoticonos, selector, animaciones, avatares, estética retro terminada.
+- [x] Pack propio de emoticonos (8, dibujados en SVG inline, con shortcodes) + selector.
+- [x] Rediseño visual retro Windows XP/Vista de la pantalla de Contactos y ventana
+      de Chat (Tahoma, degradados, scrollbar clásico, menús contextuales, grupos
+      colapsables con contador).
+- [ ] Animaciones de emoticonos, avatares subidos por el usuario — no implementado.
 
 ## FASE 8 — PWA
 

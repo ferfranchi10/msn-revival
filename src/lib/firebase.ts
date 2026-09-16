@@ -1,5 +1,6 @@
 import { type FirebaseApp, getApps, initializeApp } from "firebase/app";
 import { type Auth, getAuth } from "firebase/auth";
+import { type Database, getDatabase } from "firebase/database";
 import { type Firestore, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -16,4 +17,5 @@ const app: FirebaseApp = getApps().length ? getApps()[0]! : initializeApp(fireba
 
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
+export const rtdb: Database = getDatabase(app);
 export default app;

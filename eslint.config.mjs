@@ -7,10 +7,13 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
+    // Default ignores of eslint-config-next. Se usa "**/" en vez de anclar a la
+    // raíz porque los worktrees de tareas en background (`.claude/worktrees/*`)
+    // generan su propio `.next` anidado, que si no se ignora también aquí queda
+    // expuesto al lint de este proyecto.
+    "**/.next/**",
+    "**/out/**",
+    "**/build/**",
     "next-env.d.ts",
   ]),
 ]);

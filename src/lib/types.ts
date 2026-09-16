@@ -10,8 +10,8 @@ export type UserProfile = {
   status: UserStatus;
   personalMessage: string;
   activity: string;
-  isOnline: boolean;
-  lastSeen: Timestamp | null;
+  /** Avisar con un toast + sonido cuando un amigo se conecta (Fase 3). Default: true. */
+  notifyFriendOnline: boolean;
   createdAt: Timestamp | null;
   updatedAt: Timestamp | null;
 };

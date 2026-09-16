@@ -22,6 +22,7 @@ export default function PerfilPage() {
   const [avatarId, setAvatarId] = useState("");
   const [status, setStatus] = useState<UserStatus>("online");
   const [personalMessage, setPersonalMessage] = useState("");
+  const [notifyFriendOnline, setNotifyFriendOnline] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const initialized = useRef(false);
@@ -38,6 +39,7 @@ export default function PerfilPage() {
       setAvatarId(profile.avatarId);
       setStatus(profile.status);
       setPersonalMessage(profile.personalMessage);
+      setNotifyFriendOnline(profile.notifyFriendOnline ?? true);
       initialized.current = true;
     }
   }, [profile]);
@@ -52,6 +54,7 @@ export default function PerfilPage() {
         avatarId,
         status,
         personalMessage: personalMessage.trim(),
+        notifyFriendOnline,
         updatedAt: serverTimestamp(),
       });
       setSavedAt(Date.now());
@@ -144,6 +147,16 @@ export default function PerfilPage() {
             maxLength={120}
             placeholder="Escuchando música 🎵"
           />
+
+          <label className="mb-5 flex items-center gap-2 text-[14px] text-[#1F2D3D]">
+            <input
+              type="checkbox"
+              checked={notifyFriendOnline}
+              onChange={(e) => setNotifyFriendOnline(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Avisarme cuando mis amigos se conecten
+          </label>
 
           {savedAt && <p className="mb-3 text-sm text-emerald-700">Perfil guardado.</p>}
 

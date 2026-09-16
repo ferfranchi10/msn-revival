@@ -83,8 +83,7 @@ export default function RegistroPage() {
           status: DEFAULT_STATUS,
           personalMessage: "",
           activity: "",
-          isOnline: false,
-          lastSeen: null,
+          notifyFriendOnline: true,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });

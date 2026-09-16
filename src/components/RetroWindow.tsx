@@ -33,14 +33,23 @@ function BackgroundWatermark() {
   );
 }
 
-export function RetroWindow({ title, children }: { title: string; children: ReactNode }) {
+export function RetroWindow({
+  title,
+  children,
+  contentClassName,
+}: {
+  title: string;
+  children: ReactNode;
+  /** Clases extra para el panel principal (p. ej. una altura fija en vez de achicarse al contenido). */
+  contentClassName?: string;
+}) {
   return (
     <div
       className="w-full max-w-md overflow-hidden rounded-[6px] border border-[#8fa3c7] shadow-[0_3px_14px_rgba(0,0,0,0.55)]"
       style={{ fontFamily: "Tahoma, Verdana, Arial, sans-serif" }}
     >
       {/* Barra de título: degradé azul Windows XP */}
-      <div className="flex items-center justify-between border-b border-[#274d80] bg-gradient-to-b from-[#5B8CC5] via-[#3E73B8] to-[#2E5F9E] px-2 py-[5px]">
+      <div className="flex items-center justify-between border-b border-[#274d80] bg-gradient-to-b from-[#5B8CC5] via-[#3E73B8] to-[#2E5F9E] px-1.5 py-1">
         <div className="flex items-center gap-1.5 pl-0.5">
           <LogoMark size={16} />
           <span className="text-[13px] font-bold text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.4)]">
@@ -55,16 +64,20 @@ export function RetroWindow({ title, children }: { title: string; children: Reac
       </div>
 
       {/* Barra de menú clásica (decorativa) */}
-      <div className="flex gap-4 border-b border-[#C4CBD5] bg-[#F4F6FA] px-3 py-1.5 text-[12px] text-[#33445A]">
+      <div className="flex gap-3 border-b border-[#C4CBD5] bg-[#F4F6FA] px-2 py-1 text-[11px] text-[#33445A]">
         {MENU_ITEMS.map((item) => (
           <span key={item}>{item}</span>
         ))}
       </div>
 
       {/* Panel principal */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-white to-[#DDE5F3] px-6 py-8 sm:px-10">
+      <div
+        className={`relative overflow-hidden bg-gradient-to-b from-white to-[#DDE5F3] px-4 py-4 sm:px-5 ${
+          contentClassName ?? ""
+        }`}
+      >
         <BackgroundWatermark />
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10 flex h-full flex-col">{children}</div>
       </div>
     </div>
   );
