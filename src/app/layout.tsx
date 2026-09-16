@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ChatProvider } from "@/context/ChatContext";
 import { PresenceManager } from "@/components/PresenceManager";
+import { NudgeManager } from "@/components/NudgeManager";
+import { MessageManager } from "@/components/MessageManager";
 import { ChatManager } from "@/components/ChatManager";
 
 const geistSans = Geist({
@@ -49,6 +51,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ChatProvider>
             {children}
             <PresenceManager />
+            <NudgeManager />
+            <MessageManager />
             <ChatManager />
           </ChatProvider>
         </AuthProvider>

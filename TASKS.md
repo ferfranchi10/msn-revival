@@ -83,11 +83,32 @@
 
 ## FASE 5 — Zumbido
 
-- [ ] Botón, evento realtime, animación, sonido, cooldown anti-spam.
+- [x] Botón "📳 Zumbido" en cada ventana de chat.
+- [x] Evento realtime (Realtime Database: `nudges/{conversationId}/{fromUid}`).
+- [x] Animación de temblor de la ventana de chat (propia al enviar, del contacto al recibir).
+- [x] Vibración en dispositivos compatibles (`navigator.vibrate`).
+- [x] Sonido propio (`public/sounds/nudge.mp3`, creado por el usuario para el
+      proyecto — no es el audio original de Microsoft).
+- [x] Aviso visual: si el chat no estaba abierto, se abre solo; toast "📳 Fulano
+      te ha enviado un zumbido".
+- [x] Cooldown anti-spam: 5 s por remitente y conversación, deshabilitado en el
+      cliente (con cuenta regresiva) y reforzado por la regla de Realtime Database.
+- [x] Configuración ON/OFF en el perfil (`notifyNudge`, default ON) para silenciar
+      el aviso (sonido/temblor/apertura automática) al recibir zumbidos.
+- [x] Reglas de seguridad de Realtime Database para `nudges` publicadas.
+- [x] Verificado con las cuentas de prueba `anaprueba2`/`brunoprueba2` en paralelo
+      (Browser pane + Chrome): zumbido enviado desde una ventana abre y hace
+      temblar la ventana del otro lado con el chat cerrado, muestra el toast, y
+      el cooldown bloquea reintentos inmediatos.
 
 ## FASE 6 — Notificaciones MSN
 
-- [ ] Mensaje nuevo, amigo conectado, solicitud de amistad, zumbido, configuración y sonidos independientes.
+- [ ] Amigo conectado, solicitud de amistad, configuración y sonidos independientes.
+- [x] Mensaje nuevo — adelantado a pedido explícito del usuario junto con el
+      sonido del zumbido: sonido propio (`public/sounds/message.mp3`) al llegar
+      un mensaje de un amigo, con toggle ON/OFF en el perfil (`notifyNewMessage`,
+      default ON). No incluye toast/aviso visual (solo sonido) ni apertura
+      automática del chat — eso queda para cuando se aborde FASE 6 completa.
 
 ## FASE 7 — Emoticonos y estética
 

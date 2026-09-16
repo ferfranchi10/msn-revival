@@ -84,6 +84,8 @@ export default function RegistroPage() {
           personalMessage: "",
           activity: "",
           notifyFriendOnline: true,
+          notifyNudge: true,
+          notifyNewMessage: true,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });

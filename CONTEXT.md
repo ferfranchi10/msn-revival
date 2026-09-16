@@ -2,10 +2,12 @@
 
 ## Fase actual
 
-**FASE 4 (chat en tiempo real) + parte visual de FASE 7 (emoticonos y estética):
-completadas y verificadas en local Y en producción** (https://msn-revival.vercel.app),
-adelantadas fuera de orden a pedido explícito del usuario (ver decisión detallada
-abajo). FASE 5 (zumbido) y FASE 6 (notificaciones) siguen pendientes, sin adelantar.
+**FASE 5 (zumbido) completada y verificada en local**, con el sonido de "mensaje
+nuevo" de FASE 6 adelantado puntualmente a pedido explícito del usuario (ver
+detalle abajo). FASE 4 (chat en tiempo real) + parte visual de FASE 7
+(emoticonos y estética) siguen completadas y verificadas en local y en
+producción (https://msn-revival.vercel.app). El resto de FASE 6
+(notificaciones) sigue pendiente, sin adelantar.
 
 ## Decisiones tomadas
 
@@ -183,6 +185,86 @@ abajo). FASE 5 (zumbido) y FASE 6 (notificaciones) siguen pendientes, sin adelan
   - **Verificado en producción** (https://msn-revival.vercel.app) con las
     cuentas de prueba reales: login, rediseño, presencia, y chat en tiempo real
     en ambos sentidos (incluyendo el fix del bug de arriba).
+
+- **FASE 5 — Zumbido**: evento efímero en Realtime Database, no persistido en
+  Firestore (a diferencia de los mensajes) — la spec lo llama explícitamente
+  "evento realtime" y no pide historial de zumbidos, así que se evitó tocar el
+  modelo/reglas de `messages` para esto. Decisiones (no vienen literal del spec):
+  - Nodo `nudges/{conversationId}/{fromUid}: timestamp` (mismo esquema que
+    `typing`, un nodo por remitente dentro de la conversación). El cooldown de
+    "máximo 1 zumbido cada 5 s" se interpretó **por remitente**, no por
+    conversación entera: si A le zumba a B, B puede responder de inmediato sin
+    esperar el cooldown de A. Esto evita que ambos compartan un único contador y
+    mantiene las reglas de Realtime Database simples de validar.
+  - Reglas de Realtime Database para `nudges` (mismo criterio de confianza que
+    `typing`: no valida amistad porque las reglas de RTDB no pueden leer
+    `friendships` de Firestore — cross-database no es posible en reglas de RTDB.
+    El límite real de spam lo pone el `.validate`, no la pertenencia a la
+    conversación):
+    ```json
+    "nudges": {
+      "$conversationId": {
+        "$fromUid": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === $fromUid",
+          ".validate": "newData.isNumber() && (!data.exists() || newData.val() > data.val() + 5000)"
+        }
+      }
+    }
+    ```
+    El cooldown de 5 s queda reforzado en el servidor (no solo en el cliente):
+    la comparación usa `now` (el timestamp real de servidor que resuelve
+    `serverTimestamp()` al validar), así que no se puede saltear editando el
+    cliente.
+  - Al recibir un zumbido: se abre/enfoca la ventana de chat aunque estuviera
+    cerrada (`NudgeManager`, montado una sola vez en el layout, mismo patrón que
+    `PresenceManager` para "amigo conectado"), se hace temblar la ventana
+    (`ChatContext.shakeSignal`, une el envío propio y la recepción remota en el
+    mismo mecanismo para no duplicar sonido/vibración), suena el zumbido y
+    vibra el dispositivo si es compatible (`navigator.vibrate`).
+  - Sonido: primero se probó una versión sintetizada con Web Audio API (ráfaga
+    de golpes graves + textura de onda cuadrada), pero el usuario terminó
+    creando sus propios archivos de audio específicamente para el proyecto y
+    se usan esos directamente. **Nunca** se usó el archivo de audio original
+    de Microsoft: el usuario llegó a pedir usar el MP3 real del sonido de MSN
+    Messenger primero (incluso para uso solo entre amigos); se explicó que el
+    uso privado no cambia que sea un asset con copyright ajeno y que la regla
+    propia del proyecto lo prohíbe explícitamente, así que no se usó.
+  - El usuario subió dos archivos propios y al principio los nombró al revés
+    (el que dijo que era "para el zumbido" resultó ser para "mensaje nuevo", y
+    viceversa — corregido tras aclararlo). Quedaron así:
+    `public/sounds/nudge.mp3` (zumbido) y `public/sounds/message.mp3` (mensaje
+    nuevo), ambos recortados con `ffmpeg` para sacar silencios/repeticiones de
+    más detectados con `silencedetect` (el de zumbido: de 4.46 s con aire
+    muerto al inicio y una repetición de más, a 0.82 s; el de mensaje: sin
+    aire muerto, ya venía ajustado). `playNudgeSound`/`playMessageSound` en
+    `src/lib/sound.ts` instancian un `Audio` nuevo por llamado, para que dos
+    sonidos superpuestos (conversaciones distintas) no se corten entre sí.
+  - Toggle `notifyNudge` en el perfil (default `true`, mismo patrón que
+    `notifyFriendOnline`): si está en `false`, no se reacciona a zumbidos
+    entrantes (ni sonido, ni temblor, ni apertura automática del chat).
+  - Verificado con las cuentas de prueba `anaprueba2`/`brunoprueba2` en
+    paralelo: zumbido enviado desde un lado abre y hace temblar la ventana del
+    otro lado aunque el chat estuviera cerrado, muestra el toast, y el cooldown
+    (con cuenta regresiva visible en el botón) bloquea reintentos inmediatos.
+    Nota: durante la verificación, dejar una pestaña de prueba mucho tiempo en
+    segundo plano hizo que Chrome cortara su conexión de RTDB (se veía como
+    "desconectado" del lado del otro usuario); se resuelve solo recargando esa
+    pestaña, no es un bug del código.
+  - **Sonido de "mensaje nuevo" (adelanto puntual de FASE 6)**: a pedido
+    explícito del usuario, junto con el ajuste del sonido del zumbido, se
+    agregó `MessageManager` (`src/components/MessageManager.tsx`, montado una
+    sola vez en el layout, mismo patrón que `NudgeManager`/`PresenceManager`):
+    escucha el último mensaje de cada conversación con un amigo aceptado
+    (`subscribeToLatestMessage` en `src/lib/chat.ts`, `orderBy('createdAt',
+    'desc') + limit(1)`) y reproduce `message.mp3` cuando llega uno que no
+    envié yo, ignorando la primera lectura de cada suscripción (mismo criterio
+    anti-"evento fantasma" que el resto de los managers). Toggle
+    `notifyNewMessage` en el perfil (default `true`). A propósito **no**
+    incluye toast ni abre el chat automáticamente (a diferencia del zumbido):
+    es solo el sonido, para no adelantar de más el resto de FASE 6. Verificado
+    con `anaprueba2`/`brunoprueba2`: al enviar un mensaje desde un lado, el
+    otro lado hace un `GET /sounds/message.mp3` inmediatamente después.
 
 ## Archivos clave
 

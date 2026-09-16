@@ -10,6 +10,8 @@ import { useTyping } from "@/hooks/useTyping";
 import { getAvatar } from "@/lib/avatars";
 import { getConversationId, sendMessage } from "@/lib/chat";
 import { renderWithEmoticons } from "@/lib/emoticons";
+import { NUDGE_COOLDOWN_MS, sendNudge } from "@/lib/nudge";
+import { playNudgeSound } from "@/lib/sound";
 import { getStatus } from "@/lib/status";
 import { RETRO_FONT } from "@/lib/theme";
 import { Emoticon } from "./Emoticon";
@@ -23,7 +25,7 @@ function formatTime(ts: Timestamp | null): string {
 
 export function ChatWindow({ uid }: { uid: string }) {
   const { user } = useAuth();
-  const { closeChat, focusChat } = useChat();
+  const { closeChat, focusChat, shakeSignal, triggerShake } = useChat();
   const { profile, visibleStatus } = useFriendPresence(uid);
   const conversationId = user ? getConversationId(user.uid, uid) : undefined;
   const messages = useMessages(conversationId);
@@ -32,11 +34,51 @@ export function ChatWindow({ uid }: { uid: string }) {
   const [text, setText] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
+  const [nudgeCooldownUntil, setNudgeCooldownUntil] = useState(0);
+  const [nudgeRemaining, setNudgeRemaining] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const lastShakeHandled = useRef(0);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages.length]);
+
+  // Temblor: reacciona tanto a un zumbido propio recién enviado como a uno recibido
+  // (ambos avisan a través del mismo `shakeSignal[uid]` en ChatContext).
+  useEffect(() => {
+    const signal = shakeSignal[uid];
+    if (!signal || signal === lastShakeHandled.current) return;
+    lastShakeHandled.current = signal;
+    setIsShaking(true);
+    // Mismo patrón rítmico de ráfaga de 4 golpes que playNudgeSound().
+    if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([80, 30, 80, 30, 80, 30, 80]);
+    const timeout = setTimeout(() => setIsShaking(false), 500);
+    return () => clearTimeout(timeout);
+  }, [shakeSignal, uid]);
+
+  useEffect(() => {
+    if (!nudgeCooldownUntil) return;
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((nudgeCooldownUntil - Date.now()) / 1000));
+      setNudgeRemaining(remaining);
+      if (remaining <= 0) clearInterval(interval);
+    }, 250);
+    return () => clearInterval(interval);
+  }, [nudgeCooldownUntil]);
+
+  async function handleNudge() {
+    if (!user || !conversationId || Date.now() < nudgeCooldownUntil) return;
+    setNudgeCooldownUntil(Date.now() + NUDGE_COOLDOWN_MS);
+    triggerShake(uid);
+    playNudgeSound();
+    try {
+      await sendNudge(conversationId, user.uid);
+    } catch {
+      // Rechazado por el cooldown reforzado en el servidor o sin conexión: el
+      // aviso local (temblor + sonido) ya se mostró igual.
+    }
+  }
 
   async function handleSend() {
     const trimmed = text.trim();
@@ -60,7 +102,9 @@ export function ChatWindow({ uid }: { uid: string }) {
   return (
     <div
       onMouseDown={() => focusChat(uid)}
-      className="flex w-[300px] flex-col overflow-hidden rounded-t-[6px] border border-[#8fa3c7] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.45)]"
+      className={`flex w-[300px] flex-col overflow-hidden rounded-t-[6px] border border-[#8fa3c7] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.45)] ${
+        isShaking ? "animate-msn-shake" : ""
+      }`}
       style={{ fontFamily: RETRO_FONT }}
     >
       <div className="flex items-center justify-between border-b border-[#274d80] bg-gradient-to-b from-[#5B8CC5] via-[#3E73B8] to-[#2E5F9E] px-2 py-1">
@@ -146,6 +190,15 @@ export function ChatWindow({ uid }: { uid: string }) {
                 }}
               />
             )}
+            <button
+              type="button"
+              onClick={handleNudge}
+              disabled={nudgeRemaining > 0}
+              title={nudgeRemaining > 0 ? `Espera ${nudgeRemaining}s` : "Enviar zumbido"}
+              className="flex h-6 w-6 items-center justify-center rounded-[2px] text-[13px] hover:bg-[#E8F1FC] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+            >
+              📳
+            </button>
           </div>
 
           <div className="border-t border-[#C4CBD5] bg-white p-1.5">

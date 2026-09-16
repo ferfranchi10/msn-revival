@@ -8,6 +8,9 @@ type ChatContextValue = {
   openChat: (uid: string) => void;
   closeChat: (uid: string) => void;
   focusChat: (uid: string) => void;
+  /** Timestamp del último zumbido a animar por contacto (propio o recibido). */
+  shakeSignal: Record<string, number>;
+  triggerShake: (uid: string) => void;
 };
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -15,6 +18,7 @@ const ChatContext = createContext<ChatContextValue | null>(null);
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [openChats, setOpenChats] = useState<string[]>([]);
   const [activeUid, setActiveUid] = useState<string | null>(null);
+  const [shakeSignal, setShakeSignal] = useState<Record<string, number>>({});
 
   const value = useMemo<ChatContextValue>(
     () => ({
@@ -29,8 +33,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setActiveUid((prev) => (prev === uid ? null : prev));
       },
       focusChat: (uid) => setActiveUid(uid),
+      shakeSignal,
+      triggerShake: (uid) => setShakeSignal((prev) => ({ ...prev, [uid]: Date.now() })),
     }),
-    [openChats, activeUid]
+    [openChats, activeUid, shakeSignal]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
