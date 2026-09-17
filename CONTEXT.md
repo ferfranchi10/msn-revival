@@ -2,12 +2,16 @@
 
 ## Fase actual
 
-**FASE 6 (notificaciones) completada y verificada en local**, salvo Web Push
-(diferido explícitamente a FASE 8, ver detalle abajo). FASE 4 (chat en tiempo
-real) + parte visual de FASE 7 (emoticonos y estética) + FASE 5 (zumbido)
-siguen completadas y verificadas en local y en producción
-(https://msn-revival.vercel.app). Falta verificar FASE 6 en producción cuando
-se haga el próximo deploy.
+**FASE 7 (emoticonos y estética) completada**, verificada en local. FASE 6
+(notificaciones) + FASE 4 (chat en tiempo real) + FASE 5 (zumbido) siguen
+completadas y verificadas en local y en producción
+(https://msn-revival.vercel.app), salvo Web Push (diferido explícitamente a
+FASE 8, ver detalle abajo).
+
+**FASE 8 (PWA) arrancada parcialmente fuera de orden** (PR #8, `62cc5f0`,
+mergeado antes de cerrar FASE 6 y sin documentar en su momento — corregido
+acá): manifest + iconos ya están. Falta el resto de la fase (service worker,
+push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
 
 ## Decisiones tomadas
 
@@ -331,6 +335,20 @@ se haga el próximo deploy.
     nuevo con el chat cerrado (toast) y con el chat abierto (sin toast,
     solo sonido), y el toggle de cada tipo probado ON→OFF→ON confirmando que
     silencia/reactiva solo ese evento puntual.
+  - **Verificado también en producción** (https://msn-revival.vercel.app) tras
+    mergear el PR #9: toast de solicitud de amistad y toast de mensaje nuevo,
+    ambos confirmados en vivo entre `fase6ana`/`fase6bruno`. Durante la
+    verificación se vieron varios `permission-denied` transitorios en la
+    consola de Firestore (`Uncaught Error in snapshot listener`), coincidiendo
+    con una sucesión rápida de rechazar/reenviar/aceptar solicitudes hecha a
+    propósito para forzar el caso de "nuevo" — no volvieron a aparecer tras
+    recargar la pestaña, y las notificaciones funcionaron bien en un ciclo
+    normal (una sola solicitud, un solo accept). No se investigó más a fondo
+    porque no es el flujo real de un usuario armando una prueba de estrés;
+    si se repite en uso normal, revisar las reglas de `conversations`/
+    `messages` (`isFriendshipAccepted`/`isFriendshipParticipant`) por una
+    posible carrera cuando el estado de `friendships` cambia justo cuando se
+    abre una suscripción nueva.
 
 - **Email de bienvenida/verificación (adelanto fuera de fase, a pedido explícito del
   usuario, no está en la spec del MVP)**: se dispara automáticamente al registrarse
@@ -418,6 +436,177 @@ se haga el próximo deploy.
       (`fertestprod01@`/`axentia.consulting@gmail.com`, creada durante estas
       pruebas) borrada con el mismo patrón de script descartable + Admin SDK.
 
+- **FASE 8 — PWA (manifest e iconos, adelanto parcial fuera de orden)**: PR #8
+  (`62cc5f0`) generó `src/app/manifest.ts` (nombre, `display: standalone`,
+  colores, iconos 192/512 servidos desde `src/app/manifest-icon/[size]/route.tsx`
+  a partir del logo existente) y `src/app/apple-icon.tsx` (180x180 para iOS),
+  más meta tags `appleWebApp`/`theme-color` en `src/app/layout.tsx`. El
+  objetivo puntual era que "Agregar a pantalla de inicio" abra la app en modo
+  standalone (sin barra de navegador), sin todavía tocar el resto de la fase
+  (service worker, instalación real, pantalla de carga, push notifications).
+  Este PR se mergeó entre FASE 6 y su documentación final, y quedó sin
+  reflejar en CONTEXT.md/TASKS.md hasta ahora — no hubo un cierre formal de
+  fase ni verificación end-to-end de "instalar como app" en un dispositivo
+  real todavía; falta hacerlo cuando se retome FASE 8 completa.
+
+- **FASE 7 — Animaciones de emoticonos y avatar por URL** (lo que quedaba de
+  la fase; el pack de emoticonos y el rediseño retro ya estaban de un
+  adelanto anterior). Decisiones (no vienen literal del spec):
+  - **Animaciones**: cada emoticono (`src/components/Emoticon.tsx`) tiene su
+    propio `@keyframes` en loop continuo mientras está en pantalla (`bob` para
+    feliz/risa, `droop` para triste, `shake` para enfadado, `pop` para
+    sorpresa, `wiggle` para lengua, `heartbeat` para el corazón), definidos en
+    `globals.css` junto al resto de animaciones del proyecto (mismo patrón que
+    `msn-shake` de Fase 5). El de guiño (`wink`) no anima la cara entera —ya
+    tiene una pose fija asimétrica— sino que le agrega un parpadeo periódico
+    solo al ojo abierto. Todas las reglas están dentro de
+    `@media (prefers-reduced-motion: no-preference)` para respetar la
+    preferencia de accesibilidad del sistema operativo.
+  - **Avatar por URL, no subida de archivo**: se consultó explícitamente al
+    usuario porque subir un archivo requiere Firebase Storage, y desde fines
+    de 2024 Firebase exige el plan **Blaze** (pago por uso, con tarjeta) para
+    poder usarlo — aunque el uso real quedaría dentro de la capa gratuita,
+    igual requiere dar de alta la tarjeta, lo cual choca con "MVP gratuito
+    primero". El usuario eligió en cambio que el usuario pegue la URL de una
+    imagen ya alojada en otro lado, sin tocar el plan de Firebase ni agregar
+    reglas de seguridad nuevas (es un campo de texto más en el mismo doc
+    `users/{uid}` que el usuario ya puede editar libremente).
+  - **Modelo de datos**: campo nuevo y opcional `avatarUrl` en `users/{uid}`
+    (`avatarId` se mantiene siempre, como *fallback*). Si `avatarUrl` está
+    presente y la imagen carga, tiene prioridad sobre el ícono preseleccionado
+    en todos los lugares donde se muestra un avatar.
+  - **Validación** (`src/app/perfil/page.tsx`): al guardar, la URL debe
+    empezar con `http://`, `https://` o `data:image/` (permite pegar una
+    imagen embebida en base64) y no superar 2000 caracteres — un límite
+    generoso para no inflar el documento de Firestore (que tiene un máximo de
+    1 MiB) con una imagen embebida grande.
+  - **Componente compartido `src/components/Avatar.tsx`**: centraliza la
+    lógica de "mostrar la URL si hay y carga, si no el ícono preseleccionado"
+    para no repetirla en los ~9 lugares que ya mostraban un avatar (fila de
+    contacto, ventana de chat, popup de perfil, los 4 toasts de notificación,
+    la ventana de contactos y los resultados de búsqueda). Si la imagen no
+    carga (`onError`), cae al ícono preseleccionado en vez de dejar un ícono
+    roto — y vuelve a intentar solo si la URL cambia a una distinta (bug
+    encontrado y corregido durante la verificación: el estado interno de "esta
+    URL falló" guardaba un booleano fijo en vez de la URL puntual que había
+    fallado, así que una vez que una imagen no cargaba, el componente quedaba
+    "roto" para siempre así el usuario pegara después una URL válida —
+    se corrigió guardando la URL que falló y comparándola contra la actual).
+  - Verificado en local (`npm run dev`, cuenta de prueba `fase6ana`): vista
+    previa en vivo al pegar una URL válida, error inline al guardar una URL
+    con esquema no soportado (`ftp://`), el avatar personalizado se ve en la
+    ventana de contactos, y las animaciones de los 8 emoticonos confirmadas
+    programáticamente (cada `<svg>` tiene su `animation-name` aplicado, y el
+    guiño tiene el parpadeo en el ojo). No se verificó en producción todavía.
+
+- **FASE 7 — Ampliación del pack de emoticonos** (a pedido del usuario, que
+  mostró una captura del pack original de Windows Live Messenger como
+  referencia de qué expresiones/shortcodes cubrir). Decisión clave: esa
+  captura es el pack **original de Microsoft** (protegido) — la regla del
+  proyecto ("todo el arte/sonido retro debe ser propio", ya aplicada con los
+  sonidos en FASE 5) exige diseño propio, así que se dibujaron 14 caras
+  **nuevas y originales** que cubren expresiones equivalentes bajo los mismos
+  shortcodes convencionales, sin calcar el arte de Microsoft:
+  `confused` (`:S`), `blush` (`:$`), `crying` (`:'(`), `neutral` (`:|`),
+  `angel` (`(A)`), `cool` (`(H)`, con lentes de sol), `nerd` (`8-|`, con
+  anteojos redondos), `sick` (`+o(`, cara verdosa con ojos en X), `party`
+  (`<:o)`, gorro de fiesta), `sleepy` (`|-)`), `thinking` (`*-)`),
+  `tonguetied` (`:-#`, boca "cerrada con cierre"), `kiss` (`:-*`) y
+  `skeptical` (`^o)`, ceja levantada). Cada shortcode tiene también una
+  variante sin guion (ej. `:S`/`:-S`) para mayor compatibilidad.
+  - Dado el tamaño (el pack original tiene ~32 expresiones/íconos que
+    todavía no existían acá, casi la mitad son objetos —gato, perro, luna,
+    rosa, reloj, abrazo— no caras), se consultó con el usuario y se decidió
+    dividir el trabajo: esta tanda cubre solo las **caras** que faltaban
+    (reutilizan la estructura `Face()` ya existente); los íconos de
+    objetos/símbolos quedan para una segunda pasada aparte, porque necesitan
+    arte bien distinto (no encajan en el wrapper de cara circular) y así no
+    se sacrifica calidad visual por apurar un lote enorme de una sola vez.
+  - Se consolidaron a propósito un par de expresiones del original que eran
+    casi idénticas entre sí (ej. dos variantes de "nerd/sorprendido con
+    anteojos") en un único ícono, para no terminar con caras redundantes que
+    se vean casi iguales.
+  - `neutral` y `tonguetied` quedaron **sin animación** a propósito (encajan
+    con "serio"/"silencio" — el resto de las caras nuevas sí tienen su loop
+    en CSS, reusando las animaciones existentes de Fase 7 con duraciones
+    distintas, más dos nuevas: `emoticon-tilt` —ceja/duda— y
+    `emoticon-woozy` —mareo—).
+  - Verificado en local: los 22 emoticonos (8 + 14) renderizan sin errores en
+    el selector y en un mensaje real de chat (cuenta `fase6ana`, contacto
+    `fase6bruno` desconectado). No se verificó en producción todavía.
+  - **Corrección posterior, a pedido del usuario tras ver los emoticonos en
+    pantalla**: 3 de las 14 caras nuevas no se entendían bien a tamaño real
+    (`cool` — la barra plana no se leía como lentes de sol; `party` — el
+    gorro apuntando derecho hacia arriba se confundía con una lengua; `kiss`
+    — la boca ovalada no se leía como un beso). Se rediseñaron: `cool` ahora
+    tiene dos lentes oscuros con puente y patillas + reflejo; `party` tiene
+    el gorro inclinado ~18° con pompón, tira de confeti y dos lunares de
+    color (para no ser una forma vertical ambigua); `kiss` tiene una boca de
+    labios rojos con arco de cupido en vez del óvalo. Verificado ampliando
+    los `<svg>` a 80px en el navegador antes de confirmar que se leían bien.
+
+- **FASE 7 — Ventanas flotantes de verdad (revierte una decisión explícita de
+  FASE 4) + barra de desplazamiento azul estilo XP**, a pedido del usuario.
+  - **Ventanas flotantes**: en FASE 4 se había decidido explícitamente un
+    "layout de panel simplificado... sin drag/resize/minimize/taskbar tipo
+    SO" (ver más arriba) para no complicar el MVP. El usuario pidió ahora
+    que tanto la ventana de Contactos como cada ventana de Chat se puedan
+    mover libremente por la pantalla, como ventanas de escritorio reales —
+    se implementó **solo el arrastre** (no resize ni minimizar/maximizar
+    reales de tamaño, que siguen sin pedirse). Nuevo hook compartido
+    `src/hooks/useDraggable.ts`: usa **Pointer Events** (no mouse/touch por
+    separado, para andar igual con mouse y con el dedo) y
+    `setPointerCapture` en vez de agregar/sacar listeners globales en
+    `document` a mano. Antes del primer arrastre, la ventana sigue en el
+    flujo normal (centrada por su contenedor con flexbox, o apilada abajo a
+    la derecha en el caso del chat); al primer arrastre "se despega" a
+    `position: fixed` en el punto exacto donde ya estaba, y desde ahí sigue
+    al puntero (con los bordes de la ventana clamped para no poder arrastrarla
+    fuera de la pantalla).
+    - `RetroWindow` (usado por Contactos y Perfil) suma una prop opcional
+      `draggable` (default `false`, para no cambiar el comportamiento de
+      Perfil ni de popups chicos como `ProfilePopup` que no la piden) — solo
+      la ventana de Contactos la activa.
+    - `ChatWindow` no usa `RetroWindow` (tiene su propia barra de título a
+      mano), así que se le agregó el arrastre directamente.
+    - **Traer al frente (z-index) al enfocar**: como ahora las ventanas de
+      chat se pueden superponer libremente entre sí, `ChatContext` suma
+      `zIndexOf(uid)` (un contador que se incrementa cada vez que se abre o
+      se hace foco en un chat) para que la última tocada quede siempre
+      arriba. La ventana de Contactos no compite por ese frente — queda
+      siempre en un z-index fijo por debajo de cualquier chat (mismo criterio
+      que ya existía: los chats siempre flotan sobre la ventana principal).
+    - **Bug encontrado y corregido durante la verificación**: al arrastrar
+      desde la barra de título, `setPointerCapture` ahí redirige los eventos
+      de puntero subsiguientes a ese mismo elemento — lo cual también se
+      comía el `click` de los botones de minimizar/cerrar (que están
+      *dentro* de esa misma barra), dejándolos sin funcionar. Se corrigió
+      con `onPointerDown` + `stopPropagation()` en el contenedor de esos
+      botones, para que el arrastre nunca arranque al hacer click ahí.
+    - No se tocó el layout de PWA/responsive (FASE 8) todavía — al ser
+      arrastre libre por mouse/touch, en pantallas chicas una ventana movida
+      podría quedar en una posición incómoda; se dejó así a propósito porque
+      el pedido puntual era la ventana de escritorio, y la revisión de
+      responsive es tarea propia de FASE 8.
+  - **Barra de desplazamiento**: `.retro-scroll` (definida en `globals.css`,
+    ya existía desde antes) tenía colores beige/tostado (tema "Luna" clásico
+    de XP) que no combinaban con la paleta azul del resto de la app, y los
+    botones de scroll no tenían flecha (cuadrados lisos). Se rediseñó en la
+    misma paleta azul de `src/lib/theme.ts` con gradientes 3D en la barra y
+    los botones, y flechas dibujadas con un `data:image/svg+xml` inline (sin
+    depender de ningún ícono de sistema). Es una recreación del **look & feel
+    genérico** de la barra de desplazamiento de Windows XP (colores, bisel,
+    flechas) — a diferencia de los emoticonos, esto no es un asset con
+    diseño de personaje/marca específico de Microsoft, es el estilo visual
+    estándar de una barra de scroll de esa época, así que no aplica la misma
+    restricción de copyright.
+  - Verificado en el navegador (Browser pane): ambas ventanas se arrastran
+    libremente con el mouse, quedan clampeadas dentro de la pantalla, el
+    z-index de foco funciona (una ventana de chat arrastrada sobre la otra
+    queda al frente; la ventana de Contactos arrastrada sobre un chat queda
+    detrás), y minimizar/cerrar siguen funcionando tras el fix del bug de
+    arriba. No se verificó en producción ni en touch/mobile real todavía.
+
 ## Archivos clave
 
 - [PROJECT_MSN_Revival_MVP.md](PROJECT_MSN_Revival_MVP.md) — spec completa del MVP (visión, pantallas, modelo de datos, fases).
@@ -446,9 +635,19 @@ se haga el próximo deploy.
   spam, pero ya no bloquea la entrega a destinatarios reales (que era el
   problema con Resend) — no hay acción pendiente salvo que se quiera mejorar
   deliverability en el futuro.
-- FASE 6: verificada de punta a punta en local (`npm run dev`, cuentas de
-  prueba `fase6ana`/`fase6bruno`). Falta verificar en producción cuando se
-  haga el próximo deploy. Web Push queda para FASE 8 (ver detalle arriba).
+- FASE 6: **verificada de punta a punta en local y en producción**
+  (`https://msn-revival.vercel.app`, PR #9 mergeado). Web Push queda para
+  FASE 8 (ver detalle arriba). Nada pendiente en manos del usuario para esta
+  fase.
+- FASE 8: manifest + iconos (PR #8) mergeados pero sin verificar todavía
+  "Agregar a pantalla de inicio" en un dispositivo real (iPhone/Android). No
+  es urgente porque el resto de la fase (service worker, push) sigue sin
+  empezar; conviene probar la instalación real recién cuando se retome la
+  fase completa.
+- FASE 7: **verificada en local**, falta verificar en producción cuando se
+  haga el próximo deploy. Nada más pendiente en manos del usuario para esta
+  fase (avatar por URL fue una decisión explícita del usuario para no
+  requerir el plan Blaze de Firebase, ver detalle arriba).
 
 ## Auditoría (2026-09-17) — hallazgos y seguimiento
 
@@ -493,4 +692,5 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
   `docs/context-fix-contactos-redirect`, `feature/mail-bienvenida-verificacion`,
   y el worktree en `.claude/worktrees/zen-lamport-c934a8`). No se tocaron por
   las dudas de que alguna otra sesión los siga usando — revisar y borrar los
-  que ya no hagan falta.
+  que ya no hagan falta. Se suma a esta lista `docs/fase-6-verificacion-produccion`
+  (ya mergeada acá, se puede borrar).

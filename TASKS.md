@@ -126,15 +126,35 @@
 
 ## FASE 7 — Emoticonos y estética
 
-- [x] Pack propio de emoticonos (8, dibujados en SVG inline, con shortcodes) + selector.
+- [x] Pack propio de emoticonos (22 en total: los 8 originales + 14 caras nuevas
+      agregadas después — ver CONTEXT.md — dibujados en SVG inline, con
+      shortcodes) + selector.
 - [x] Rediseño visual retro Windows XP/Vista de la pantalla de Contactos y ventana
       de Chat (Tahoma, degradados, scrollbar clásico, menús contextuales, grupos
       colapsables con contador).
-- [ ] Animaciones de emoticonos, avatares subidos por el usuario — no implementado.
+- [x] Animaciones de emoticonos: cada uno tiene su propio loop en CSS (bob, droop,
+      shake, pop, wiggle, heartbeat, parpadeo), desactivadas si el usuario prefiere
+      menos movimiento (`prefers-reduced-motion`).
+- [x] Avatares subidos por el usuario: por URL (no archivo — ver recorte de alcance
+      en CONTEXT.md), con vista previa en vivo y caída automática al ícono
+      preseleccionado si la imagen no carga.
+- [x] Ventanas flotantes de verdad: la ventana de Contactos y cada ventana de
+      Chat se pueden arrastrar libremente por la pantalla (revierte el
+      "layout de panel simplificado" decidido en FASE 4 — ver CONTEXT.md).
+      Sin resize ni minimizar/maximizar de tamaño real, no fue parte del pedido.
+- [x] Barra de desplazamiento rediseñada en la paleta azul de la app, con
+      flechas y bisel 3D (antes era beige/tostada y sin flechas).
 
 ## FASE 8 — PWA
 
-- [ ] Manifest, iconos, service worker, instalación, responsive, push notifications.
+- [x] Manifest (`src/app/manifest.ts`) e iconos 192/512 + `apple-touch-icon`
+      180x180 generados a partir del logo existente, con meta tags de
+      `appleWebApp`/`theme-color` para que "Agregar a pantalla de inicio"
+      abra en modo standalone (PR #8, adelantado sin abrir formalmente la
+      fase — ver CONTEXT.md).
+- [ ] Service worker, instalación, responsive, pantalla de carga, push
+      notifications (esta última también pendiente de FASE 6, ver CONTEXT.md).
+- [ ] Pruebas en iPhone, Android y desktop.
 
 ## FASE 9 — Test privado
 

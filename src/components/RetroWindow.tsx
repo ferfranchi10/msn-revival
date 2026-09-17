@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useDraggable } from "@/hooks/useDraggable";
 import { LogoMark } from "./LogoMark";
 
 function WindowButton({ children, close = false }: { children: ReactNode; close?: boolean }) {
@@ -37,26 +40,42 @@ export function RetroWindow({
   title,
   children,
   contentClassName,
+  draggable = false,
 }: {
   title: string;
   children: ReactNode;
   /** Clases extra para el panel principal (p. ej. una altura fija en vez de achicarse al contenido). */
   contentClassName?: string;
+  /** Si es true, la ventana se puede arrastrar libremente desde la barra de título (como una ventana de escritorio real). */
+  draggable?: boolean;
 }) {
+  const { elementRef, position, dragHandleProps } = useDraggable();
+
   return (
     <div
+      ref={draggable ? elementRef : undefined}
       className="w-full max-w-md overflow-hidden rounded-[6px] border border-[#8fa3c7] shadow-[0_3px_14px_rgba(0,0,0,0.55)]"
-      style={{ fontFamily: "Tahoma, Verdana, Arial, sans-serif" }}
+      style={{
+        fontFamily: "Tahoma, Verdana, Arial, sans-serif",
+        ...(draggable && position
+          ? { position: "fixed", left: position.x, top: position.y, margin: 0, zIndex: 30 }
+          : {}),
+      }}
     >
       {/* Barra de título: degradé azul Windows XP */}
-      <div className="flex items-center justify-between border-b border-[#274d80] bg-gradient-to-b from-[#5B8CC5] via-[#3E73B8] to-[#2E5F9E] px-1.5 py-1">
+      <div
+        className={`flex items-center justify-between border-b border-[#274d80] bg-gradient-to-b from-[#5B8CC5] via-[#3E73B8] to-[#2E5F9E] px-1.5 py-1 ${
+          draggable ? "touch-none select-none cursor-move" : ""
+        }`}
+        {...(draggable ? dragHandleProps : {})}
+      >
         <div className="flex items-center gap-1.5 pl-0.5">
           <LogoMark size={16} />
           <span className="text-[13px] font-bold text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.4)]">
             {title}
           </span>
         </div>
-        <div className="flex items-center gap-[3px]">
+        <div className="flex items-center gap-[3px]" onPointerDown={(e) => e.stopPropagation()}>
           <WindowButton>–</WindowButton>
           <WindowButton>□</WindowButton>
           <WindowButton close>×</WindowButton>

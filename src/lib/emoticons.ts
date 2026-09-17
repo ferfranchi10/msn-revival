@@ -12,6 +12,20 @@ export const EMOTICONS: { id: EmoticonId; shortcodes: string[]; label: string }[
   { id: "surprised", shortcodes: [":O", ":-O"], label: "Sorpresa" },
   { id: "tongue", shortcodes: [":P", ":-P"], label: "Lengua" },
   { id: "love", shortcodes: ["<3"], label: "Amor" },
+  { id: "confused", shortcodes: [":S", ":-S"], label: "Confundido" },
+  { id: "blush", shortcodes: [":$", ":-$"], label: "Vergüenza" },
+  { id: "crying", shortcodes: [":'(", ":'-("], label: "Llorando" },
+  { id: "neutral", shortcodes: [":|", ":-|"], label: "Serio" },
+  { id: "angel", shortcodes: ["(A)", "(a)"], label: "Angelical" },
+  { id: "cool", shortcodes: ["(H)", "(h)"], label: "Genial" },
+  { id: "nerd", shortcodes: ["8-|", "8|"], label: "Nerd" },
+  { id: "sick", shortcodes: ["+o(", "+O("], label: "Mareado" },
+  { id: "party", shortcodes: ["<:o)", "<:O)"], label: "Fiesta" },
+  { id: "sleepy", shortcodes: ["|-)", "|)"], label: "Dormido" },
+  { id: "thinking", shortcodes: ["*-)", "*)"], label: "Pensando" },
+  { id: "tonguetied", shortcodes: [":-#", ":#"], label: "Silencio" },
+  { id: "kiss", shortcodes: [":-*", ":*"], label: "Beso" },
+  { id: "skeptical", shortcodes: ["^o)", "^O)"], label: "Escéptico" },
 ];
 
 const SHORTCODE_TO_ID = new Map<string, EmoticonId>();

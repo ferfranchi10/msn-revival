@@ -25,26 +25,51 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Scrollbar clásico de Windows XP (solo navegadores basados en Chromium). */
+/* Scrollbar clásico de Windows XP tema azul (solo navegadores basados en
+   Chromium) — pista y flechas en la misma paleta azul del resto de la app. */
 .retro-scroll::-webkit-scrollbar {
-  width: 15px;
+  width: 16px;
 }
 .retro-scroll::-webkit-scrollbar-track {
-  background: #ece9d8;
-  border-left: 1px solid #aca899;
+  background: #dfe7f5;
+  border-left: 1px solid #9db0cc;
 }
 .retro-scroll::-webkit-scrollbar-thumb {
-  background: #d4d0c8;
-  border: 1px solid #8a8a8a;
+  background: linear-gradient(to right, #eef3fb, #c3d2ea 45%, #9fb6d9);
+  border: 1px solid #6d87ad;
+  border-radius: 1px;
 }
 .retro-scroll::-webkit-scrollbar-thumb:hover {
-  background: #c2beb5;
+  background: linear-gradient(to right, #f4f8fd, #d3e0f2 45%, #adc3e2);
 }
 .retro-scroll::-webkit-scrollbar-button {
   display: block;
-  height: 15px;
-  background: #d4d0c8;
-  border: 1px solid #8a8a8a;
+  height: 16px;
+  background-image: linear-gradient(to bottom, #eef3fb, #b9cbe6);
+  background-repeat: no-repeat;
+  border: 1px solid #6d87ad;
+}
+.retro-scroll::-webkit-scrollbar-button:vertical:decrement {
+  background-image:
+    linear-gradient(to bottom, #eef3fb, #b9cbe6),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,2 9,8 1,8' fill='%233a5a8a'/%3E%3C/svg%3E");
+  background-size:
+    cover,
+    8px 8px;
+  background-position:
+    center,
+    center;
+}
+.retro-scroll::-webkit-scrollbar-button:vertical:increment {
+  background-image:
+    linear-gradient(to bottom, #eef3fb, #b9cbe6),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,8 9,2 1,2' fill='%233a5a8a'/%3E%3C/svg%3E");
+  background-size:
+    cover,
+    8px 8px;
+  background-position:
+    center,
+    center;
 }
 
 /* Temblor de ventana al enviar/recibir un zumbido (Fase 5). */
@@ -71,4 +96,169 @@ body {
 }
 .animate-msn-shake {
   animation: msn-shake 0.5s ease-in-out;
+}
+
+/* Animaciones de emoticonos (Fase 7) — en loop mientras estén en pantalla,
+   desactivadas si el usuario prefiere menos movimiento. */
+@media (prefers-reduced-motion: no-preference) {
+  .emoticon-happy {
+    animation: emoticon-bob 2.2s ease-in-out infinite;
+  }
+  .emoticon-laugh {
+    animation: emoticon-bob 0.9s ease-in-out infinite;
+  }
+  .emoticon-sad {
+    animation: emoticon-droop 3s ease-in-out infinite;
+  }
+  .emoticon-angry {
+    animation: emoticon-shake 1.6s ease-in-out infinite;
+  }
+  .emoticon-surprised {
+    animation: emoticon-pop 1.8s ease-in-out infinite;
+  }
+  .emoticon-tongue {
+    animation: emoticon-wiggle 1.4s ease-in-out infinite;
+  }
+  .emoticon-love {
+    animation: emoticon-heartbeat 1.3s ease-in-out infinite;
+  }
+  .emoticon-eye-blink {
+    animation: emoticon-blink 3.4s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .emoticon-confused {
+    animation: emoticon-tilt 1.8s ease-in-out infinite;
+  }
+  .emoticon-blush {
+    animation: emoticon-pop 2.4s ease-in-out infinite;
+  }
+  .emoticon-crying {
+    animation: emoticon-droop 2.2s ease-in-out infinite;
+  }
+  .emoticon-angel {
+    animation: emoticon-bob 3.2s ease-in-out infinite;
+  }
+  .emoticon-cool {
+    animation: emoticon-bob 2.6s ease-in-out infinite;
+  }
+  .emoticon-nerd {
+    animation: emoticon-bob 3s ease-in-out infinite;
+  }
+  .emoticon-sick {
+    animation: emoticon-woozy 1.3s ease-in-out infinite;
+  }
+  .emoticon-party {
+    animation: emoticon-bob 0.7s ease-in-out infinite;
+  }
+  .emoticon-sleepy {
+    animation: emoticon-droop 4s ease-in-out infinite;
+  }
+  .emoticon-thinking {
+    animation: emoticon-tilt 2.4s ease-in-out infinite;
+  }
+  .emoticon-kiss {
+    animation: emoticon-heartbeat 1.5s ease-in-out infinite;
+  }
+  .emoticon-skeptical {
+    animation: emoticon-tilt 2s ease-in-out infinite;
+  }
+}
+
+@keyframes emoticon-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes emoticon-droop {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(3deg) translateY(1px);
+  }
+}
+@keyframes emoticon-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  20% {
+    transform: translateX(-1px) rotate(-3deg);
+  }
+  40% {
+    transform: translateX(1px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-1px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(1px) rotate(2deg);
+  }
+}
+@keyframes emoticon-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+@keyframes emoticon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+@keyframes emoticon-heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.18);
+  }
+  45% {
+    transform: scale(0.95);
+  }
+}
+@keyframes emoticon-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes emoticon-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-6deg);
+  }
+}
+@keyframes emoticon-woozy {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  25% {
+    transform: rotate(-5deg) translateX(-1px);
+  }
+  75% {
+    transform: rotate(5deg) translateX(1px);
+  }
 }

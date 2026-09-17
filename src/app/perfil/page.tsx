@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { Avatar } from "@/components/Avatar";
 import { LogoMark } from "@/components/LogoMark";
 import { RetroButton } from "@/components/RetroButton";
 import { RetroField } from "@/components/RetroField";
@@ -14,12 +15,18 @@ import { AVATARS } from "@/lib/avatars";
 import { auth, db } from "@/lib/firebase";
 import { STATUS_OPTIONS, type UserStatus } from "@/lib/status";
 
+/** Acepta http(s) o `data:image/...` (imagen embebida como base64). */
+const AVATAR_URL_REGEX = /^(https?:\/\/|data:image\/)/i;
+const AVATAR_URL_MAX_LENGTH = 2000;
+
 export default function PerfilPage() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
 
   const [displayName, setDisplayName] = useState("");
   const [avatarId, setAvatarId] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarUrlError, setAvatarUrlError] = useState<string | null>(null);
   const [status, setStatus] = useState<UserStatus>("online");
   const [personalMessage, setPersonalMessage] = useState("");
   const [notifyFriendOnline, setNotifyFriendOnline] = useState(true);
@@ -40,6 +47,7 @@ export default function PerfilPage() {
     if (profile && !initialized.current) {
       setDisplayName(profile.displayName);
       setAvatarId(profile.avatarId);
+      setAvatarUrl(profile.avatarUrl ?? "");
       setStatus(profile.status);
       setPersonalMessage(profile.personalMessage);
       setNotifyFriendOnline(profile.notifyFriendOnline ?? true);
@@ -53,11 +61,26 @@ export default function PerfilPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
+    setAvatarUrlError(null);
+
+    const trimmedAvatarUrl = avatarUrl.trim();
+    if (trimmedAvatarUrl) {
+      if (trimmedAvatarUrl.length > AVATAR_URL_MAX_LENGTH) {
+        setAvatarUrlError("La URL es demasiado larga.");
+        return;
+      }
+      if (!AVATAR_URL_REGEX.test(trimmedAvatarUrl)) {
+        setAvatarUrlError("Tiene que ser una URL que empiece con http:// o https://.");
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       await updateDoc(doc(db, "users", user.uid), {
         displayName: displayName.trim() || profile?.displayName,
         avatarId,
+        avatarUrl: trimmedAvatarUrl,
         status,
         personalMessage: personalMessage.trim(),
         notifyFriendOnline,
@@ -105,14 +128,18 @@ export default function PerfilPage() {
 
         <form onSubmit={handleSave} className="mx-auto w-full max-w-[360px]">
           <p className="mb-2 text-[15px] text-[#1F2D3D]">Avatar</p>
-          <div className="mb-5 flex flex-wrap gap-2">
+          <div className="mb-3 flex flex-wrap gap-2">
             {AVATARS.map((avatar) => (
               <button
                 key={avatar.id}
                 type="button"
-                onClick={() => setAvatarId(avatar.id)}
+                onClick={() => {
+                  setAvatarId(avatar.id);
+                  setAvatarUrl("");
+                  setAvatarUrlError(null);
+                }}
                 className={`flex h-10 w-10 items-center justify-center rounded-full border text-lg transition ${
-                  avatarId === avatar.id
+                  avatarId === avatar.id && !avatarUrl.trim()
                     ? "border-[#2E5F9E] ring-2 ring-[#2E5F9E] ring-offset-2"
                     : "border-[#A7B0BE]"
                 }`}
@@ -122,6 +149,36 @@ export default function PerfilPage() {
                 {avatar.emoji}
               </button>
             ))}
+          </div>
+
+          <div className="mb-5">
+            <p className="mb-1 text-[13px] text-[#33445A]">O tu propia imagen, pegando una URL:</p>
+            <div className="mb-1 flex items-center gap-2.5">
+              <Avatar avatarId={avatarId} avatarUrl={avatarUrl.trim()} className="h-10 w-10 text-lg border border-[#A7B0BE]" />
+              <input
+                type="url"
+                value={avatarUrl}
+                onChange={(e) => {
+                  setAvatarUrl(e.target.value);
+                  setAvatarUrlError(null);
+                }}
+                placeholder="https://..."
+                className="min-w-0 flex-1 rounded-[3px] border border-[#A7B0BE] bg-white px-3 py-2 text-[13px] text-[#1F2D3D] shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] focus:border-[#3E73B8] focus:outline-none"
+              />
+            </div>
+            {avatarUrl.trim() && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAvatarUrl("");
+                  setAvatarUrlError(null);
+                }}
+                className="text-[12px] text-[#2E5F9E] underline"
+              >
+                Quitar imagen y usar el ícono
+              </button>
+            )}
+            {avatarUrlError && <p className="mt-1 text-[12px] text-red-600">{avatarUrlError}</p>}
           </div>
 
           <RetroField

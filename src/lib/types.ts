@@ -7,6 +7,8 @@ export type UserProfile = {
   usernameLower: string;
   email: string;
   avatarId: string;
+  /** URL de una imagen propia como avatar (Fase 7). Si está presente, tiene prioridad sobre `avatarId`. Opcional: los perfiles creados antes no la tienen. */
+  avatarUrl?: string;
   status: UserStatus;
   personalMessage: string;
   activity: string;

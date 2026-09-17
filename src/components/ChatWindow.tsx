@@ -4,16 +4,17 @@ import type { Timestamp } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
+import { useDraggable } from "@/hooks/useDraggable";
 import { useFriendPresence } from "@/hooks/useFriendPresence";
 import { useMessages } from "@/hooks/useMessages";
 import { useTyping } from "@/hooks/useTyping";
-import { getAvatar } from "@/lib/avatars";
 import { getConversationId, MAX_MESSAGE_LENGTH, sendMessage } from "@/lib/chat";
 import { renderWithEmoticons } from "@/lib/emoticons";
 import { NUDGE_COOLDOWN_MS, sendNudge } from "@/lib/nudge";
 import { playNudgeSound } from "@/lib/sound";
 import { getStatus } from "@/lib/status";
 import { RETRO_FONT } from "@/lib/theme";
+import { Avatar } from "./Avatar";
 import { Emoticon } from "./Emoticon";
 import { EmoticonPicker } from "./EmoticonPicker";
 import { RetroButton } from "./RetroButton";
@@ -25,7 +26,8 @@ function formatTime(ts: Timestamp | null): string {
 
 export function ChatWindow({ uid }: { uid: string }) {
   const { user } = useAuth();
-  const { closeChat, focusChat, shakeSignal, triggerShake } = useChat();
+  const { closeChat, focusChat, shakeSignal, triggerShake, zIndexOf } = useChat();
+  const { elementRef, position, dragHandleProps } = useDraggable();
   const { profile, visibleStatus } = useFriendPresence(uid);
   const conversationId = user ? getConversationId(user.uid, uid) : undefined;
   const messages = useMessages(conversationId);
@@ -96,22 +98,29 @@ export function ChatWindow({ uid }: { uid: string }) {
   }
 
   if (!profile || !user) return null;
-  const avatar = getAvatar(profile.avatarId);
   const status = getStatus(visibleStatus);
 
   return (
     <div
+      ref={elementRef}
       onMouseDown={() => focusChat(uid)}
       className={`flex w-[300px] flex-col overflow-hidden rounded-t-[6px] border border-[#8fa3c7] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.45)] ${
         isShaking ? "animate-msn-shake" : ""
       }`}
-      style={{ fontFamily: RETRO_FONT }}
+      style={{
+        fontFamily: RETRO_FONT,
+        zIndex: zIndexOf(uid),
+        ...(position ? { position: "fixed", left: position.x, top: position.y } : { position: "relative" }),
+      }}
     >
-      <div className="flex items-center justify-between border-b border-[#274d80] bg-gradient-to-b from-[#5B8CC5] via-[#3E73B8] to-[#2E5F9E] px-2 py-1">
+      <div
+        className="flex touch-none items-center justify-between border-b border-[#274d80] bg-gradient-to-b from-[#5B8CC5] via-[#3E73B8] to-[#2E5F9E] px-2 py-1 select-none cursor-move"
+        {...dragHandleProps}
+      >
         <span className="truncate text-[12px] font-bold text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.4)]">
           {profile.displayName}
         </span>
-        <div className="flex shrink-0 items-center gap-[3px]">
+        <div className="flex shrink-0 items-center gap-[3px]" onPointerDown={(e) => e.stopPropagation()}>
           <button
             type="button"
             onClick={() => setMinimized((m) => !m)}
@@ -134,12 +143,7 @@ export function ChatWindow({ uid }: { uid: string }) {
       {!minimized && (
         <>
           <div className="flex items-center gap-2 border-b border-[#C4CBD5] bg-[#F4F6FA] px-2 py-1.5">
-            <span
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm"
-              style={{ backgroundColor: avatar.bg }}
-            >
-              {avatar.emoji}
-            </span>
+            <Avatar avatarId={profile.avatarId} avatarUrl={profile.avatarUrl} className="h-7 w-7 text-sm" />
             <div className="min-w-0">
               <p className="truncate text-[12px] font-semibold text-[#1F2D3D]">{profile.displayName}</p>
               <p className="truncate text-[11px] text-[#33445A]">

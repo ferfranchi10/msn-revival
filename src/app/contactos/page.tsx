@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Avatar } from "@/components/Avatar";
 import type { ContextMenuItem } from "@/components/ContactContextMenu";
 import { ContactGroup } from "@/components/ContactGroup";
 import { FriendRow } from "@/components/FriendRow";
@@ -29,7 +30,6 @@ import { db } from "@/lib/firebase";
 import { getFriendshipId, getOtherUid, type Friendship } from "@/lib/friendships";
 import { useFriendsPresence } from "@/hooks/useFriendsPresence";
 import { STATUS_OPTIONS, type UserStatus } from "@/lib/status";
-import { getAvatar } from "@/lib/avatars";
 import { useFriendships } from "@/hooks/useFriendships";
 import type { UserProfile } from "@/lib/types";
 
@@ -207,18 +207,15 @@ export default function ContactosPage() {
     );
   }
 
-  const myAvatar = getAvatar(profile.avatarId);
-
   return (
     <div className="flex min-h-screen w-full flex-1 items-center justify-center overflow-y-auto bg-black px-4 py-10">
-      <RetroWindow title="MSN Revival" contentClassName="flex h-[560px] flex-col">
+      <RetroWindow title="MSN Revival" contentClassName="flex h-[560px] flex-col" draggable>
         <div className="mb-2 flex shrink-0 items-center gap-2.5 border-b border-[#C4CBD5] pb-2.5">
-          <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8fa3c7] text-base"
-            style={{ backgroundColor: myAvatar.bg }}
-          >
-            {myAvatar.emoji}
-          </span>
+          <Avatar
+            avatarId={profile.avatarId}
+            avatarUrl={profile.avatarUrl}
+            className="h-9 w-9 border border-[#8fa3c7] text-base"
+          />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <p className="truncate text-[13px] font-bold text-[#1F2D3D]">{profile.displayName}</p>
@@ -291,15 +288,9 @@ export default function ContactosPage() {
                 )}
                 {results.map((r) => {
                   const existing = friendshipWith(r.uid);
-                  const avatar = getAvatar(r.profile.avatarId);
                   return (
                     <div key={r.uid} className="flex items-center gap-2 border-t border-[#E4E9F2] py-1.5 first:border-t-0">
-                      <span
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px]"
-                        style={{ backgroundColor: avatar.bg }}
-                      >
-                        {avatar.emoji}
-                      </span>
+                      <Avatar avatarId={r.profile.avatarId} avatarUrl={r.profile.avatarUrl} className="h-6 w-6 text-[12px]" />
                       <p className="min-w-0 flex-1 truncate text-[12px] text-[#1F2D3D]">
                         {r.profile.displayName} <span className="text-[#33445A]/60">@{r.profile.username}</span>
                       </p>
