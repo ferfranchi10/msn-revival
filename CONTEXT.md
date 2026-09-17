@@ -2,12 +2,16 @@
 
 ## Fase actual
 
-**FASE 6 (notificaciones) completada y verificada en local**, salvo Web Push
-(diferido explícitamente a FASE 8, ver detalle abajo). FASE 4 (chat en tiempo
-real) + parte visual de FASE 7 (emoticonos y estética) + FASE 5 (zumbido)
-siguen completadas y verificadas en local y en producción
-(https://msn-revival.vercel.app). Falta verificar FASE 6 en producción cuando
-se haga el próximo deploy.
+**FASE 7 (emoticonos y estética) completada**, verificada en local. FASE 6
+(notificaciones) + FASE 4 (chat en tiempo real) + FASE 5 (zumbido) siguen
+completadas y verificadas en local y en producción
+(https://msn-revival.vercel.app), salvo Web Push (diferido explícitamente a
+FASE 8, ver detalle abajo).
+
+**FASE 8 (PWA) arrancada parcialmente fuera de orden** (PR #8, `62cc5f0`,
+mergeado antes de cerrar FASE 6 y sin documentar en su momento — corregido
+acá): manifest + iconos ya están. Falta el resto de la fase (service worker,
+push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
 
 ## Decisiones tomadas
 
@@ -331,6 +335,20 @@ se haga el próximo deploy.
     nuevo con el chat cerrado (toast) y con el chat abierto (sin toast,
     solo sonido), y el toggle de cada tipo probado ON→OFF→ON confirmando que
     silencia/reactiva solo ese evento puntual.
+  - **Verificado también en producción** (https://msn-revival.vercel.app) tras
+    mergear el PR #9: toast de solicitud de amistad y toast de mensaje nuevo,
+    ambos confirmados en vivo entre `fase6ana`/`fase6bruno`. Durante la
+    verificación se vieron varios `permission-denied` transitorios en la
+    consola de Firestore (`Uncaught Error in snapshot listener`), coincidiendo
+    con una sucesión rápida de rechazar/reenviar/aceptar solicitudes hecha a
+    propósito para forzar el caso de "nuevo" — no volvieron a aparecer tras
+    recargar la pestaña, y las notificaciones funcionaron bien en un ciclo
+    normal (una sola solicitud, un solo accept). No se investigó más a fondo
+    porque no es el flujo real de un usuario armando una prueba de estrés;
+    si se repite en uso normal, revisar las reglas de `conversations`/
+    `messages` (`isFriendshipAccepted`/`isFriendshipParticipant`) por una
+    posible carrera cuando el estado de `friendships` cambia justo cuando se
+    abre una suscripción nueva.
 
 - **Email de bienvenida/verificación (adelanto fuera de fase, a pedido explícito del
   usuario, no está en la spec del MVP)**: se dispara automáticamente al registrarse
@@ -418,6 +436,69 @@ se haga el próximo deploy.
       (`fertestprod01@`/`axentia.consulting@gmail.com`, creada durante estas
       pruebas) borrada con el mismo patrón de script descartable + Admin SDK.
 
+- **FASE 8 — PWA (manifest e iconos, adelanto parcial fuera de orden)**: PR #8
+  (`62cc5f0`) generó `src/app/manifest.ts` (nombre, `display: standalone`,
+  colores, iconos 192/512 servidos desde `src/app/manifest-icon/[size]/route.tsx`
+  a partir del logo existente) y `src/app/apple-icon.tsx` (180x180 para iOS),
+  más meta tags `appleWebApp`/`theme-color` en `src/app/layout.tsx`. El
+  objetivo puntual era que "Agregar a pantalla de inicio" abra la app en modo
+  standalone (sin barra de navegador), sin todavía tocar el resto de la fase
+  (service worker, instalación real, pantalla de carga, push notifications).
+  Este PR se mergeó entre FASE 6 y su documentación final, y quedó sin
+  reflejar en CONTEXT.md/TASKS.md hasta ahora — no hubo un cierre formal de
+  fase ni verificación end-to-end de "instalar como app" en un dispositivo
+  real todavía; falta hacerlo cuando se retome FASE 8 completa.
+
+- **FASE 7 — Animaciones de emoticonos y avatar por URL** (lo que quedaba de
+  la fase; el pack de emoticonos y el rediseño retro ya estaban de un
+  adelanto anterior). Decisiones (no vienen literal del spec):
+  - **Animaciones**: cada emoticono (`src/components/Emoticon.tsx`) tiene su
+    propio `@keyframes` en loop continuo mientras está en pantalla (`bob` para
+    feliz/risa, `droop` para triste, `shake` para enfadado, `pop` para
+    sorpresa, `wiggle` para lengua, `heartbeat` para el corazón), definidos en
+    `globals.css` junto al resto de animaciones del proyecto (mismo patrón que
+    `msn-shake` de Fase 5). El de guiño (`wink`) no anima la cara entera —ya
+    tiene una pose fija asimétrica— sino que le agrega un parpadeo periódico
+    solo al ojo abierto. Todas las reglas están dentro de
+    `@media (prefers-reduced-motion: no-preference)` para respetar la
+    preferencia de accesibilidad del sistema operativo.
+  - **Avatar por URL, no subida de archivo**: se consultó explícitamente al
+    usuario porque subir un archivo requiere Firebase Storage, y desde fines
+    de 2024 Firebase exige el plan **Blaze** (pago por uso, con tarjeta) para
+    poder usarlo — aunque el uso real quedaría dentro de la capa gratuita,
+    igual requiere dar de alta la tarjeta, lo cual choca con "MVP gratuito
+    primero". El usuario eligió en cambio que el usuario pegue la URL de una
+    imagen ya alojada en otro lado, sin tocar el plan de Firebase ni agregar
+    reglas de seguridad nuevas (es un campo de texto más en el mismo doc
+    `users/{uid}` que el usuario ya puede editar libremente).
+  - **Modelo de datos**: campo nuevo y opcional `avatarUrl` en `users/{uid}`
+    (`avatarId` se mantiene siempre, como *fallback*). Si `avatarUrl` está
+    presente y la imagen carga, tiene prioridad sobre el ícono preseleccionado
+    en todos los lugares donde se muestra un avatar.
+  - **Validación** (`src/app/perfil/page.tsx`): al guardar, la URL debe
+    empezar con `http://`, `https://` o `data:image/` (permite pegar una
+    imagen embebida en base64) y no superar 2000 caracteres — un límite
+    generoso para no inflar el documento de Firestore (que tiene un máximo de
+    1 MiB) con una imagen embebida grande.
+  - **Componente compartido `src/components/Avatar.tsx`**: centraliza la
+    lógica de "mostrar la URL si hay y carga, si no el ícono preseleccionado"
+    para no repetirla en los ~9 lugares que ya mostraban un avatar (fila de
+    contacto, ventana de chat, popup de perfil, los 4 toasts de notificación,
+    la ventana de contactos y los resultados de búsqueda). Si la imagen no
+    carga (`onError`), cae al ícono preseleccionado en vez de dejar un ícono
+    roto — y vuelve a intentar solo si la URL cambia a una distinta (bug
+    encontrado y corregido durante la verificación: el estado interno de "esta
+    URL falló" guardaba un booleano fijo en vez de la URL puntual que había
+    fallado, así que una vez que una imagen no cargaba, el componente quedaba
+    "roto" para siempre así el usuario pegara después una URL válida —
+    se corrigió guardando la URL que falló y comparándola contra la actual).
+  - Verificado en local (`npm run dev`, cuenta de prueba `fase6ana`): vista
+    previa en vivo al pegar una URL válida, error inline al guardar una URL
+    con esquema no soportado (`ftp://`), el avatar personalizado se ve en la
+    ventana de contactos, y las animaciones de los 8 emoticonos confirmadas
+    programáticamente (cada `<svg>` tiene su `animation-name` aplicado, y el
+    guiño tiene el parpadeo en el ojo). No se verificó en producción todavía.
+
 ## Archivos clave
 
 - [PROJECT_MSN_Revival_MVP.md](PROJECT_MSN_Revival_MVP.md) — spec completa del MVP (visión, pantallas, modelo de datos, fases).
@@ -446,9 +527,19 @@ se haga el próximo deploy.
   spam, pero ya no bloquea la entrega a destinatarios reales (que era el
   problema con Resend) — no hay acción pendiente salvo que se quiera mejorar
   deliverability en el futuro.
-- FASE 6: verificada de punta a punta en local (`npm run dev`, cuentas de
-  prueba `fase6ana`/`fase6bruno`). Falta verificar en producción cuando se
-  haga el próximo deploy. Web Push queda para FASE 8 (ver detalle arriba).
+- FASE 6: **verificada de punta a punta en local y en producción**
+  (`https://msn-revival.vercel.app`, PR #9 mergeado). Web Push queda para
+  FASE 8 (ver detalle arriba). Nada pendiente en manos del usuario para esta
+  fase.
+- FASE 8: manifest + iconos (PR #8) mergeados pero sin verificar todavía
+  "Agregar a pantalla de inicio" en un dispositivo real (iPhone/Android). No
+  es urgente porque el resto de la fase (service worker, push) sigue sin
+  empezar; conviene probar la instalación real recién cuando se retome la
+  fase completa.
+- FASE 7: **verificada en local**, falta verificar en producción cuando se
+  haga el próximo deploy. Nada más pendiente en manos del usuario para esta
+  fase (avatar por URL fue una decisión explícita del usuario para no
+  requerir el plan Blaze de Firebase, ver detalle arriba).
 
 ## Auditoría (2026-09-17) — hallazgos y seguimiento
 
@@ -493,4 +584,5 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
   `docs/context-fix-contactos-redirect`, `feature/mail-bienvenida-verificacion`,
   y el worktree en `.claude/worktrees/zen-lamport-c934a8`). No se tocaron por
   las dudas de que alguna otra sesión los siga usando — revisar y borrar los
-  que ya no hagan falta.
+  que ya no hagan falta. Se suma a esta lista `docs/fase-6-verificacion-produccion`
+  (ya mergeada acá, se puede borrar).
