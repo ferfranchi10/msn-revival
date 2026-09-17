@@ -8,7 +8,7 @@ import { useFriendPresence } from "@/hooks/useFriendPresence";
 import { useMessages } from "@/hooks/useMessages";
 import { useTyping } from "@/hooks/useTyping";
 import { getAvatar } from "@/lib/avatars";
-import { getConversationId, sendMessage } from "@/lib/chat";
+import { getConversationId, MAX_MESSAGE_LENGTH, sendMessage } from "@/lib/chat";
 import { renderWithEmoticons } from "@/lib/emoticons";
 import { NUDGE_COOLDOWN_MS, sendNudge } from "@/lib/nudge";
 import { playNudgeSound } from "@/lib/sound";
@@ -211,6 +211,7 @@ export function ChatWindow({ uid }: { uid: string }) {
               onKeyDown={handleKeyDown}
               placeholder="Escribe tu mensaje..."
               rows={2}
+              maxLength={MAX_MESSAGE_LENGTH}
               className="w-full resize-none border-0 text-[13px] text-[#1F2D3D] focus:outline-none"
             />
           </div>

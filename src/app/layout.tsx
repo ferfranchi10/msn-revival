@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "MSN Revival",
   description: DESCRIPTION,
+  // App privada para un grupo cerrado de amigos: no tiene sentido que la indexen buscadores.
+  robots: { index: false, follow: false },
   openGraph: {
     title: "MSN Revival",
     description: DESCRIPTION,

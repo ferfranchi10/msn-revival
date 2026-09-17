@@ -25,11 +25,17 @@ export type Message = {
  * (permite validar la amistad con un solo `get()` contra `friendships/{conversationId}`). */
 export const getConversationId = getFriendshipId;
 
+/** Solo aplicado en el cliente (no hay `firestore.rules` versionado en el repo
+ * todavía para reforzarlo también del lado del servidor, ver CONTEXT.md). */
+export const MAX_MESSAGE_LENGTH = 2000;
+
 export async function sendMessage(conversationId: string, participants: [string, string], senderId: string, text: string) {
+  const trimmed = text.trim().slice(0, MAX_MESSAGE_LENGTH);
+  if (!trimmed) return;
   await setDoc(doc(db, "conversations", conversationId), { participants }, { merge: true });
   await addDoc(collection(db, "conversations", conversationId, "messages"), {
     senderId,
-    text,
+    text: trimmed,
     createdAt: serverTimestamp(),
   });
 }
