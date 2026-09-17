@@ -7,13 +7,13 @@ import { useChat } from "@/context/ChatContext";
 import { useFriendPresence } from "@/hooks/useFriendPresence";
 import { useMessages } from "@/hooks/useMessages";
 import { useTyping } from "@/hooks/useTyping";
-import { getAvatar } from "@/lib/avatars";
 import { getConversationId, MAX_MESSAGE_LENGTH, sendMessage } from "@/lib/chat";
 import { renderWithEmoticons } from "@/lib/emoticons";
 import { NUDGE_COOLDOWN_MS, sendNudge } from "@/lib/nudge";
 import { playNudgeSound } from "@/lib/sound";
 import { getStatus } from "@/lib/status";
 import { RETRO_FONT } from "@/lib/theme";
+import { Avatar } from "./Avatar";
 import { Emoticon } from "./Emoticon";
 import { EmoticonPicker } from "./EmoticonPicker";
 import { RetroButton } from "./RetroButton";
@@ -96,7 +96,6 @@ export function ChatWindow({ uid }: { uid: string }) {
   }
 
   if (!profile || !user) return null;
-  const avatar = getAvatar(profile.avatarId);
   const status = getStatus(visibleStatus);
 
   return (
@@ -134,12 +133,7 @@ export function ChatWindow({ uid }: { uid: string }) {
       {!minimized && (
         <>
           <div className="flex items-center gap-2 border-b border-[#C4CBD5] bg-[#F4F6FA] px-2 py-1.5">
-            <span
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm"
-              style={{ backgroundColor: avatar.bg }}
-            >
-              {avatar.emoji}
-            </span>
+            <Avatar avatarId={profile.avatarId} avatarUrl={profile.avatarUrl} className="h-7 w-7 text-sm" />
             <div className="min-w-0">
               <p className="truncate text-[12px] font-semibold text-[#1F2D3D]">{profile.displayName}</p>
               <p className="truncate text-[11px] text-[#33445A]">

@@ -13,14 +13,15 @@ function Face({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Emoticono propio (cara dibujada, no emoji nativo del SO) para el chat retro. */
+/** Emoticono propio (cara dibujada, no emoji nativo del SO) para el chat retro.
+ * Cada uno tiene una animación en loop propia (ver `.emoticon-*` en globals.css). */
 export function Emoticon({ id, size = 18 }: { id: EmoticonId; size?: number }) {
   return (
     <svg
       viewBox="0 0 20 20"
       width={size}
       height={size}
-      className="inline-block align-text-bottom"
+      className={`inline-block align-text-bottom emoticon-${id}`}
       aria-label={id}
     >
       {id === "happy" && (
@@ -55,7 +56,7 @@ export function Emoticon({ id, size = 18 }: { id: EmoticonId; size?: number }) {
       {id === "wink" && (
         <Face>
           <path d="M5.6 8.4h2.6" stroke={LINE} strokeWidth="1.4" strokeLinecap="round" />
-          <circle cx="13.2" cy="8.3" r="1.1" fill={LINE} />
+          <circle cx="13.2" cy="8.3" r="1.1" fill={LINE} className="emoticon-eye-blink" />
           <path d="M6 12c1.2 1.6 6.8 1.6 8 0" stroke={LINE} strokeWidth="1.4" fill="none" strokeLinecap="round" />
         </Face>
       )}

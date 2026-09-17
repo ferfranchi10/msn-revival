@@ -130,7 +130,12 @@
 - [x] Rediseño visual retro Windows XP/Vista de la pantalla de Contactos y ventana
       de Chat (Tahoma, degradados, scrollbar clásico, menús contextuales, grupos
       colapsables con contador).
-- [ ] Animaciones de emoticonos, avatares subidos por el usuario — no implementado.
+- [x] Animaciones de emoticonos: cada uno tiene su propio loop en CSS (bob, droop,
+      shake, pop, wiggle, heartbeat, parpadeo), desactivadas si el usuario prefiere
+      menos movimiento (`prefers-reduced-motion`).
+- [x] Avatares subidos por el usuario: por URL (no archivo — ver recorte de alcance
+      en CONTEXT.md), con vista previa en vivo y caída automática al ícono
+      preseleccionado si la imagen no carga.
 
 ## FASE 8 — PWA
 
