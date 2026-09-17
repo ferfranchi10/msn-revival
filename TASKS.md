@@ -138,6 +138,12 @@
 - [x] Avatares subidos por el usuario: por URL (no archivo — ver recorte de alcance
       en CONTEXT.md), con vista previa en vivo y caída automática al ícono
       preseleccionado si la imagen no carga.
+- [x] Ventanas flotantes de verdad: la ventana de Contactos y cada ventana de
+      Chat se pueden arrastrar libremente por la pantalla (revierte el
+      "layout de panel simplificado" decidido en FASE 4 — ver CONTEXT.md).
+      Sin resize ni minimizar/maximizar de tamaño real, no fue parte del pedido.
+- [x] Barra de desplazamiento rediseñada en la paleta azul de la app, con
+      flechas y bisel 3D (antes era beige/tostada y sin flechas).
 
 ## FASE 8 — PWA
 

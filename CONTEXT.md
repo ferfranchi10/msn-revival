@@ -534,6 +534,78 @@ push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
   - Verificado en local: los 22 emoticonos (8 + 14) renderizan sin errores en
     el selector y en un mensaje real de chat (cuenta `fase6ana`, contacto
     `fase6bruno` desconectado). No se verificó en producción todavía.
+  - **Corrección posterior, a pedido del usuario tras ver los emoticonos en
+    pantalla**: 3 de las 14 caras nuevas no se entendían bien a tamaño real
+    (`cool` — la barra plana no se leía como lentes de sol; `party` — el
+    gorro apuntando derecho hacia arriba se confundía con una lengua; `kiss`
+    — la boca ovalada no se leía como un beso). Se rediseñaron: `cool` ahora
+    tiene dos lentes oscuros con puente y patillas + reflejo; `party` tiene
+    el gorro inclinado ~18° con pompón, tira de confeti y dos lunares de
+    color (para no ser una forma vertical ambigua); `kiss` tiene una boca de
+    labios rojos con arco de cupido en vez del óvalo. Verificado ampliando
+    los `<svg>` a 80px en el navegador antes de confirmar que se leían bien.
+
+- **FASE 7 — Ventanas flotantes de verdad (revierte una decisión explícita de
+  FASE 4) + barra de desplazamiento azul estilo XP**, a pedido del usuario.
+  - **Ventanas flotantes**: en FASE 4 se había decidido explícitamente un
+    "layout de panel simplificado... sin drag/resize/minimize/taskbar tipo
+    SO" (ver más arriba) para no complicar el MVP. El usuario pidió ahora
+    que tanto la ventana de Contactos como cada ventana de Chat se puedan
+    mover libremente por la pantalla, como ventanas de escritorio reales —
+    se implementó **solo el arrastre** (no resize ni minimizar/maximizar
+    reales de tamaño, que siguen sin pedirse). Nuevo hook compartido
+    `src/hooks/useDraggable.ts`: usa **Pointer Events** (no mouse/touch por
+    separado, para andar igual con mouse y con el dedo) y
+    `setPointerCapture` en vez de agregar/sacar listeners globales en
+    `document` a mano. Antes del primer arrastre, la ventana sigue en el
+    flujo normal (centrada por su contenedor con flexbox, o apilada abajo a
+    la derecha en el caso del chat); al primer arrastre "se despega" a
+    `position: fixed` en el punto exacto donde ya estaba, y desde ahí sigue
+    al puntero (con los bordes de la ventana clamped para no poder arrastrarla
+    fuera de la pantalla).
+    - `RetroWindow` (usado por Contactos y Perfil) suma una prop opcional
+      `draggable` (default `false`, para no cambiar el comportamiento de
+      Perfil ni de popups chicos como `ProfilePopup` que no la piden) — solo
+      la ventana de Contactos la activa.
+    - `ChatWindow` no usa `RetroWindow` (tiene su propia barra de título a
+      mano), así que se le agregó el arrastre directamente.
+    - **Traer al frente (z-index) al enfocar**: como ahora las ventanas de
+      chat se pueden superponer libremente entre sí, `ChatContext` suma
+      `zIndexOf(uid)` (un contador que se incrementa cada vez que se abre o
+      se hace foco en un chat) para que la última tocada quede siempre
+      arriba. La ventana de Contactos no compite por ese frente — queda
+      siempre en un z-index fijo por debajo de cualquier chat (mismo criterio
+      que ya existía: los chats siempre flotan sobre la ventana principal).
+    - **Bug encontrado y corregido durante la verificación**: al arrastrar
+      desde la barra de título, `setPointerCapture` ahí redirige los eventos
+      de puntero subsiguientes a ese mismo elemento — lo cual también se
+      comía el `click` de los botones de minimizar/cerrar (que están
+      *dentro* de esa misma barra), dejándolos sin funcionar. Se corrigió
+      con `onPointerDown` + `stopPropagation()` en el contenedor de esos
+      botones, para que el arrastre nunca arranque al hacer click ahí.
+    - No se tocó el layout de PWA/responsive (FASE 8) todavía — al ser
+      arrastre libre por mouse/touch, en pantallas chicas una ventana movida
+      podría quedar en una posición incómoda; se dejó así a propósito porque
+      el pedido puntual era la ventana de escritorio, y la revisión de
+      responsive es tarea propia de FASE 8.
+  - **Barra de desplazamiento**: `.retro-scroll` (definida en `globals.css`,
+    ya existía desde antes) tenía colores beige/tostado (tema "Luna" clásico
+    de XP) que no combinaban con la paleta azul del resto de la app, y los
+    botones de scroll no tenían flecha (cuadrados lisos). Se rediseñó en la
+    misma paleta azul de `src/lib/theme.ts` con gradientes 3D en la barra y
+    los botones, y flechas dibujadas con un `data:image/svg+xml` inline (sin
+    depender de ningún ícono de sistema). Es una recreación del **look & feel
+    genérico** de la barra de desplazamiento de Windows XP (colores, bisel,
+    flechas) — a diferencia de los emoticonos, esto no es un asset con
+    diseño de personaje/marca específico de Microsoft, es el estilo visual
+    estándar de una barra de scroll de esa época, así que no aplica la misma
+    restricción de copyright.
+  - Verificado en el navegador (Browser pane): ambas ventanas se arrastran
+    libremente con el mouse, quedan clampeadas dentro de la pantalla, el
+    z-index de foco funciona (una ventana de chat arrastrada sobre la otra
+    queda al frente; la ventana de Contactos arrastrada sobre un chat queda
+    detrás), y minimizar/cerrar siguen funcionando tras el fix del bug de
+    arriba. No se verificó en producción ni en touch/mobile real todavía.
 
 ## Archivos clave
 

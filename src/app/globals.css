@@ -25,26 +25,51 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Scrollbar clásico de Windows XP (solo navegadores basados en Chromium). */
+/* Scrollbar clásico de Windows XP tema azul (solo navegadores basados en
+   Chromium) — pista y flechas en la misma paleta azul del resto de la app. */
 .retro-scroll::-webkit-scrollbar {
-  width: 15px;
+  width: 16px;
 }
 .retro-scroll::-webkit-scrollbar-track {
-  background: #ece9d8;
-  border-left: 1px solid #aca899;
+  background: #dfe7f5;
+  border-left: 1px solid #9db0cc;
 }
 .retro-scroll::-webkit-scrollbar-thumb {
-  background: #d4d0c8;
-  border: 1px solid #8a8a8a;
+  background: linear-gradient(to right, #eef3fb, #c3d2ea 45%, #9fb6d9);
+  border: 1px solid #6d87ad;
+  border-radius: 1px;
 }
 .retro-scroll::-webkit-scrollbar-thumb:hover {
-  background: #c2beb5;
+  background: linear-gradient(to right, #f4f8fd, #d3e0f2 45%, #adc3e2);
 }
 .retro-scroll::-webkit-scrollbar-button {
   display: block;
-  height: 15px;
-  background: #d4d0c8;
-  border: 1px solid #8a8a8a;
+  height: 16px;
+  background-image: linear-gradient(to bottom, #eef3fb, #b9cbe6);
+  background-repeat: no-repeat;
+  border: 1px solid #6d87ad;
+}
+.retro-scroll::-webkit-scrollbar-button:vertical:decrement {
+  background-image:
+    linear-gradient(to bottom, #eef3fb, #b9cbe6),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,2 9,8 1,8' fill='%233a5a8a'/%3E%3C/svg%3E");
+  background-size:
+    cover,
+    8px 8px;
+  background-position:
+    center,
+    center;
+}
+.retro-scroll::-webkit-scrollbar-button:vertical:increment {
+  background-image:
+    linear-gradient(to bottom, #eef3fb, #b9cbe6),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='5,8 9,2 1,2' fill='%233a5a8a'/%3E%3C/svg%3E");
+  background-size:
+    cover,
+    8px 8px;
+  background-position:
+    center,
+    center;
 }
 
 /* Temblor de ventana al enviar/recibir un zumbido (Fase 5). */

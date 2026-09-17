@@ -149,8 +149,12 @@ export function Emoticon({ id, size = 18 }: { id: EmoticonId; size?: number }) {
       )}
       {id === "cool" && (
         <Face>
-          <rect x="4.8" y="7.4" width="10.4" height="2.6" rx="1.2" fill="#2b2b2b" />
-          <rect x="9.6" y="8.1" width="0.8" height="1.2" fill="#2b2b2b" />
+          <path d="M4.6 7.8h-1.4M15.4 7.8h1.4" stroke="#1a1a1a" strokeWidth="0.9" strokeLinecap="round" />
+          <rect x="4.6" y="7" width="4.6" height="3.2" rx="1.4" fill="#1a1a1a" />
+          <rect x="10.8" y="7" width="4.6" height="3.2" rx="1.4" fill="#1a1a1a" />
+          <rect x="9.2" y="7.9" width="1.6" height="1" fill="#1a1a1a" />
+          <rect x="5.6" y="7.5" width="1.3" height="0.8" rx="0.3" fill="#9fb6d9" opacity="0.8" />
+          <rect x="11.8" y="7.5" width="1.3" height="0.8" rx="0.3" fill="#9fb6d9" opacity="0.8" />
           <path d="M6 12.4c1.2 1.4 6.8 1.4 8 0" stroke={LINE} strokeWidth="1.4" fill="none" strokeLinecap="round" />
         </Face>
       )}
@@ -185,8 +189,13 @@ export function Emoticon({ id, size = 18 }: { id: EmoticonId; size?: number }) {
             <circle cx="13.2" cy="8.3" r="1.1" fill={LINE} />
             <path d="M6 11.6c1.2 1.8 6.8 1.8 8 0z" fill={LINE} />
           </Face>
-          <path d="M10 0.6l2.6 4.2h-5.2z" fill="#e14a8f" stroke="#8a2a5a" strokeWidth="0.6" />
-          <circle cx="10" cy="0.6" r="0.9" fill="#ffd94a" />
+          <g transform="rotate(18 10 6)">
+            <path d="M10 0.4l2.2 5.8h-4.4z" fill="#e14a8f" stroke="#8a2a5a" strokeWidth="0.5" />
+            <path d="M8.3 4.6h3.4" stroke="#ffd94a" strokeWidth="0.6" />
+            <circle cx="9.3" cy="3.1" r="0.5" fill="#ffd94a" />
+            <circle cx="10.7" cy="2.2" r="0.4" fill="#5AA9E6" />
+            <circle cx="10" cy="0.4" r="0.8" fill="#ffd94a" />
+          </g>
         </>
       )}
       {id === "sleepy" && (
@@ -220,7 +229,13 @@ export function Emoticon({ id, size = 18 }: { id: EmoticonId; size?: number }) {
         <Face>
           <path d="M5.6 8.3h2.6" stroke={LINE} strokeWidth="1.3" strokeLinecap="round" />
           <circle cx="13.2" cy="8.3" r="1.1" fill={LINE} />
-          <ellipse cx="10" cy="12.6" rx="1.3" ry="1" fill="#e05a6b" stroke="#7a1f2c" strokeWidth="0.5" />
+          <path
+            d="M5.6 12.6q1.4-1.4 2.6-0.3 0.8-0.9 1.8-0.9t1.8 0.9q1.2-1.1 2.6 0.3-1.2 2.4-4.4 2.4t-4.4-2.4z"
+            fill="#d81159"
+            stroke="#6e0c33"
+            strokeWidth="0.4"
+          />
+          <path d="M6 12.7c1.6 0.6 6.4 0.6 8 0" stroke="#6e0c33" strokeWidth="0.35" fill="none" />
         </Face>
       )}
       {id === "skeptical" && (
