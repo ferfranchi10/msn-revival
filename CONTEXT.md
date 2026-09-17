@@ -499,6 +499,42 @@ push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
     programáticamente (cada `<svg>` tiene su `animation-name` aplicado, y el
     guiño tiene el parpadeo en el ojo). No se verificó en producción todavía.
 
+- **FASE 7 — Ampliación del pack de emoticonos** (a pedido del usuario, que
+  mostró una captura del pack original de Windows Live Messenger como
+  referencia de qué expresiones/shortcodes cubrir). Decisión clave: esa
+  captura es el pack **original de Microsoft** (protegido) — la regla del
+  proyecto ("todo el arte/sonido retro debe ser propio", ya aplicada con los
+  sonidos en FASE 5) exige diseño propio, así que se dibujaron 14 caras
+  **nuevas y originales** que cubren expresiones equivalentes bajo los mismos
+  shortcodes convencionales, sin calcar el arte de Microsoft:
+  `confused` (`:S`), `blush` (`:$`), `crying` (`:'(`), `neutral` (`:|`),
+  `angel` (`(A)`), `cool` (`(H)`, con lentes de sol), `nerd` (`8-|`, con
+  anteojos redondos), `sick` (`+o(`, cara verdosa con ojos en X), `party`
+  (`<:o)`, gorro de fiesta), `sleepy` (`|-)`), `thinking` (`*-)`),
+  `tonguetied` (`:-#`, boca "cerrada con cierre"), `kiss` (`:-*`) y
+  `skeptical` (`^o)`, ceja levantada). Cada shortcode tiene también una
+  variante sin guion (ej. `:S`/`:-S`) para mayor compatibilidad.
+  - Dado el tamaño (el pack original tiene ~32 expresiones/íconos que
+    todavía no existían acá, casi la mitad son objetos —gato, perro, luna,
+    rosa, reloj, abrazo— no caras), se consultó con el usuario y se decidió
+    dividir el trabajo: esta tanda cubre solo las **caras** que faltaban
+    (reutilizan la estructura `Face()` ya existente); los íconos de
+    objetos/símbolos quedan para una segunda pasada aparte, porque necesitan
+    arte bien distinto (no encajan en el wrapper de cara circular) y así no
+    se sacrifica calidad visual por apurar un lote enorme de una sola vez.
+  - Se consolidaron a propósito un par de expresiones del original que eran
+    casi idénticas entre sí (ej. dos variantes de "nerd/sorprendido con
+    anteojos") en un único ícono, para no terminar con caras redundantes que
+    se vean casi iguales.
+  - `neutral` y `tonguetied` quedaron **sin animación** a propósito (encajan
+    con "serio"/"silencio" — el resto de las caras nuevas sí tienen su loop
+    en CSS, reusando las animaciones existentes de Fase 7 con duraciones
+    distintas, más dos nuevas: `emoticon-tilt` —ceja/duda— y
+    `emoticon-woozy` —mareo—).
+  - Verificado en local: los 22 emoticonos (8 + 14) renderizan sin errores en
+    el selector y en un mensaje real de chat (cuenta `fase6ana`, contacto
+    `fase6bruno` desconectado). No se verificó en producción todavía.
+
 ## Archivos clave
 
 - [PROJECT_MSN_Revival_MVP.md](PROJECT_MSN_Revival_MVP.md) — spec completa del MVP (visión, pantallas, modelo de datos, fases).

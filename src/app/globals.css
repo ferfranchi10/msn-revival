@@ -102,6 +102,42 @@ body {
     transform-box: fill-box;
     transform-origin: center;
   }
+  .emoticon-confused {
+    animation: emoticon-tilt 1.8s ease-in-out infinite;
+  }
+  .emoticon-blush {
+    animation: emoticon-pop 2.4s ease-in-out infinite;
+  }
+  .emoticon-crying {
+    animation: emoticon-droop 2.2s ease-in-out infinite;
+  }
+  .emoticon-angel {
+    animation: emoticon-bob 3.2s ease-in-out infinite;
+  }
+  .emoticon-cool {
+    animation: emoticon-bob 2.6s ease-in-out infinite;
+  }
+  .emoticon-nerd {
+    animation: emoticon-bob 3s ease-in-out infinite;
+  }
+  .emoticon-sick {
+    animation: emoticon-woozy 1.3s ease-in-out infinite;
+  }
+  .emoticon-party {
+    animation: emoticon-bob 0.7s ease-in-out infinite;
+  }
+  .emoticon-sleepy {
+    animation: emoticon-droop 4s ease-in-out infinite;
+  }
+  .emoticon-thinking {
+    animation: emoticon-tilt 2.4s ease-in-out infinite;
+  }
+  .emoticon-kiss {
+    animation: emoticon-heartbeat 1.5s ease-in-out infinite;
+  }
+  .emoticon-skeptical {
+    animation: emoticon-tilt 2s ease-in-out infinite;
+  }
 }
 
 @keyframes emoticon-bob {
@@ -178,5 +214,26 @@ body {
   }
   96% {
     transform: scaleY(0.1);
+  }
+}
+@keyframes emoticon-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-6deg);
+  }
+}
+@keyframes emoticon-woozy {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  25% {
+    transform: rotate(-5deg) translateX(-1px);
+  }
+  75% {
+    transform: rotate(5deg) translateX(1px);
   }
 }

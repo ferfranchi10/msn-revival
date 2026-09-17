@@ -126,7 +126,9 @@
 
 ## FASE 7 — Emoticonos y estética
 
-- [x] Pack propio de emoticonos (8, dibujados en SVG inline, con shortcodes) + selector.
+- [x] Pack propio de emoticonos (22 en total: los 8 originales + 14 caras nuevas
+      agregadas después — ver CONTEXT.md — dibujados en SVG inline, con
+      shortcodes) + selector.
 - [x] Rediseño visual retro Windows XP/Vista de la pantalla de Contactos y ventana
       de Chat (Tahoma, degradados, scrollbar clásico, menús contextuales, grupos
       colapsables con contador).
