@@ -134,7 +134,14 @@
 
 ## FASE 8 — PWA
 
-- [ ] Manifest, iconos, service worker, instalación, responsive, push notifications.
+- [x] Manifest (`src/app/manifest.ts`) e iconos 192/512 + `apple-touch-icon`
+      180x180 generados a partir del logo existente, con meta tags de
+      `appleWebApp`/`theme-color` para que "Agregar a pantalla de inicio"
+      abra en modo standalone (PR #8, adelantado sin abrir formalmente la
+      fase — ver CONTEXT.md).
+- [ ] Service worker, instalación, responsive, pantalla de carga, push
+      notifications (esta última también pendiente de FASE 6, ver CONTEXT.md).
+- [ ] Pruebas en iPhone, Android y desktop.
 
 ## FASE 9 — Test privado
 

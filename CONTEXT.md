@@ -8,6 +8,11 @@ FASE 8, ver detalle abajo). FASE 4 (chat en tiempo real) + parte visual de
 FASE 7 (emoticonos y estética) + FASE 5 (zumbido) siguen completadas y
 verificadas en local y en producción.
 
+**FASE 8 (PWA) arrancada parcialmente fuera de orden** (PR #8, `62cc5f0`,
+mergeado antes de cerrar FASE 6 y sin documentar en su momento — corregido
+acá): manifest + iconos ya están. Falta el resto de la fase (service worker,
+push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
+
 ## Decisiones tomadas
 
 - Nombre provisional: **MSN Revival**.
@@ -418,6 +423,19 @@ verificadas en local y en producción.
       (`fertestprod01@`/`axentia.consulting@gmail.com`, creada durante estas
       pruebas) borrada con el mismo patrón de script descartable + Admin SDK.
 
+- **FASE 8 — PWA (manifest e iconos, adelanto parcial fuera de orden)**: PR #8
+  (`62cc5f0`) generó `src/app/manifest.ts` (nombre, `display: standalone`,
+  colores, iconos 192/512 servidos desde `src/app/manifest-icon/[size]/route.tsx`
+  a partir del logo existente) y `src/app/apple-icon.tsx` (180x180 para iOS),
+  más meta tags `appleWebApp`/`theme-color` en `src/app/layout.tsx`. El
+  objetivo puntual era que "Agregar a pantalla de inicio" abra la app en modo
+  standalone (sin barra de navegador), sin todavía tocar el resto de la fase
+  (service worker, instalación real, pantalla de carga, push notifications).
+  Este PR se mergeó entre FASE 6 y su documentación final, y quedó sin
+  reflejar en CONTEXT.md/TASKS.md hasta ahora — no hubo un cierre formal de
+  fase ni verificación end-to-end de "instalar como app" en un dispositivo
+  real todavía; falta hacerlo cuando se retome FASE 8 completa.
+
 ## Archivos clave
 
 - [PROJECT_MSN_Revival_MVP.md](PROJECT_MSN_Revival_MVP.md) — spec completa del MVP (visión, pantallas, modelo de datos, fases).
@@ -447,3 +465,8 @@ verificadas en local y en producción.
   (`https://msn-revival.vercel.app`, PR #9 mergeado). Web Push queda para
   FASE 8 (ver detalle arriba). Nada pendiente en manos del usuario para esta
   fase.
+- FASE 8: manifest + iconos (PR #8) mergeados pero sin verificar todavía
+  "Agregar a pantalla de inicio" en un dispositivo real (iPhone/Android). No
+  es urgente porque el resto de la fase (service worker, push) sigue sin
+  empezar; conviene probar la instalación real recién cuando se retome la
+  fase completa.
