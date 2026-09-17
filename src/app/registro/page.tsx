@@ -86,6 +86,7 @@ export default function RegistroPage() {
           notifyFriendOnline: true,
           notifyNudge: true,
           notifyNewMessage: true,
+          notifyFriendRequest: true,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });

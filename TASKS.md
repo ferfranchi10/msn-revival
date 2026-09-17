@@ -103,12 +103,26 @@
 
 ## FASE 6 — Notificaciones MSN
 
-- [ ] Amigo conectado, solicitud de amistad, configuración y sonidos independientes.
-- [x] Mensaje nuevo — adelantado a pedido explícito del usuario junto con el
-      sonido del zumbido: sonido propio (`public/sounds/message.mp3`) al llegar
-      un mensaje de un amigo, con toggle ON/OFF en el perfil (`notifyNewMessage`,
-      default ON). No incluye toast/aviso visual (solo sonido) ni apertura
-      automática del chat — eso queda para cuando se aborde FASE 6 completa.
+- [x] Amigo conectado: toast + sonido propio (`public/sounds/connect.mp3`),
+      con toggle ON/OFF (`notifyFriendOnline`, default ON) — ya estaba de FASE 3,
+      ahora con archivo de audio propio en vez del tono sintetizado original.
+- [x] Solicitud de amistad: toast + sonido propio (`public/sounds/friend-request.mp3`)
+      al recibir una solicitud nueva, con toggle ON/OFF (`notifyFriendRequest`,
+      default ON). No abre ninguna pantalla — la solicitud ya se ve en
+      "Solicitudes recibidas" de `/contactos`.
+- [x] Mensaje nuevo: sonido (adelantado en FASE 5) + toast visual "te ha enviado
+      un mensaje" agregado ahora, suprimido si esa ventana de chat ya está
+      abierta en pantalla. Sigue sin abrir el chat automáticamente. Toggle
+      `notifyNewMessage`, default ON.
+- [x] Zumbido: toast + sonido + temblor — ya estaba de FASE 5.
+- [x] Configuración independiente: sección "Notificaciones" en el perfil con
+      los 4 toggles agrupados (Amigos conectados, Solicitudes de amistad,
+      Zumbidos, Mensajes).
+- [x] Sonidos independientes: cada tipo de evento tiene su propio archivo/sonido
+      (`connect.mp3`, `friend-request.mp3`, `nudge.mp3`, `message.mp3`), todos
+      creados por el usuario para el proyecto.
+- [ ] Web Push — diferido a FASE 8 (PWA): requiere el service worker que se
+      arma en esa fase, no tiene sentido adelantarlo suelto. Ver CONTEXT.md.
 
 ## FASE 7 — Emoticonos y estética
 

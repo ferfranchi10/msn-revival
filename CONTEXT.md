@@ -2,12 +2,12 @@
 
 ## Fase actual
 
-**FASE 5 (zumbido) completada y verificada en local**, con el sonido de "mensaje
-nuevo" de FASE 6 adelantado puntualmente a pedido explícito del usuario (ver
-detalle abajo). FASE 4 (chat en tiempo real) + parte visual de FASE 7
-(emoticonos y estética) siguen completadas y verificadas en local y en
-producción (https://msn-revival.vercel.app). El resto de FASE 6
-(notificaciones) sigue pendiente, sin adelantar.
+**FASE 6 (notificaciones) completada y verificada en local**, salvo Web Push
+(diferido explícitamente a FASE 8, ver detalle abajo). FASE 4 (chat en tiempo
+real) + parte visual de FASE 7 (emoticonos y estética) + FASE 5 (zumbido)
+siguen completadas y verificadas en local y en producción
+(https://msn-revival.vercel.app). Falta verificar FASE 6 en producción cuando
+se haga el próximo deploy.
 
 ## Decisiones tomadas
 
@@ -266,6 +266,72 @@ producción (https://msn-revival.vercel.app). El resto de FASE 6
     con `anaprueba2`/`brunoprueba2`: al enviar un mensaje desde un lado, el
     otro lado hace un `GET /sounds/message.mp3` inmediatamente después.
 
+- **FASE 6 — Notificaciones**: se completó lo que quedaba pendiente de la fase
+  (amigo conectado y zumbido ya estaban de fases anteriores). Decisiones (no
+  vienen literal del spec):
+  - **Solicitud de amistad** (`src/components/FriendRequestManager.tsx`, mismo
+    patrón de manager invisible montado una vez en el layout que
+    `PresenceManager`/`NudgeManager`/`MessageManager`): escucha
+    `useFriendships().incoming` y notifica (toast + sonido) cuando aparece un
+    id de `friendship` nuevo. A diferencia de los managers basados en
+    Realtime Database (que exponen un callback por evento), `useFriendships`
+    da un array recalculado en cada snapshot de Firestore, así que "nuevo" se
+    detecta comparando el set de ids contra el snapshot del run anterior del
+    efecto (no un acumulado que solo crece). Esto importa porque
+    `friendshipId` es determinístico por par de usuarios
+    (`getFriendshipId`): si se rechaza una solicitud y más adelante se vuelve
+    a pedir amistad al mismo par, el id se reutiliza — un set que solo
+    acumula (en vez de reemplazarse en cada corrida) nunca volvería a
+    notificar esa segunda vez. Se encontró este bug durante la verificación
+    (probando rechazar/reenviar repetidamente entre las cuentas de prueba) y
+    se corrigió antes de cerrar la fase.
+  - Toggle `notifyFriendRequest` en el perfil (default `true`).
+  - **Toast de "mensaje nuevo"**: se agregó al `MessageManager` existente
+    (que desde el adelanto de Fase 5 sólo reproducía sonido). El toast se
+    suprime si la ventana de chat con ese contacto ya está abierta
+    (`ChatContext.openChats`), para no duplicar el aviso con el mensaje que
+    ya se ve llegar ahí — sigue sin abrir el chat automáticamente (eso queda
+    exclusivo del zumbido). `openChats` y el mapa de presencia (para el
+    nombre/avatar del remitente) se leen por `ref` dentro del efecto en vez
+    de ir en las dependencias: si estuvieran en las dependencias, cada
+    apertura/cierre de cualquier chat o cada cambio de presencia de un amigo
+    reabriría la suscripción a Firestore y reiniciaría el criterio de
+    "ignorar la primera lectura", pudiendo comerse una notificación real.
+  - **Sonido de "amigo conectado"**: se reemplazó el tono sintetizado con Web
+    Audio API (de Fase 3) por un archivo propio (`public/sounds/connect.mp3`)
+    creado por el usuario, mismo criterio que `nudge.mp3`/`message.mp3`. El
+    usuario también proveyó `friend-request.mp3`; ambos se recortaron con
+    `ffmpeg`/`silencedetect` para sacar aire muerto al inicio/final, mismo
+    procedimiento que se usó con `nudge.mp3` en Fase 5.
+  - **Perfil**: los 3 toggles sueltos que ya existían (`notifyFriendOnline`,
+    `notifyNudge`, `notifyNewMessage`) se agruparon junto con el nuevo
+    (`notifyFriendRequest`) en una sección "Notificaciones" con las 4
+    opciones (Amigos conectados, Solicitudes de amistad, Zumbidos, Mensajes),
+    siguiendo el mockup de la sección 14 del spec.
+  - **Web Push (recorte de alcance explícito, consultado con el usuario)**: el
+    spec de FASE 6 la menciona ("Web Push cuando sea posible"), pero FASE 8
+    (PWA) ya tiene "push notifications" en su propio checklist y requiere el
+    service worker que todavía no existe — no tiene sentido adelantar Web
+    Push sin esa infraestructura. Queda pendiente para cuando se aborde
+    FASE 8.
+  - **Rama contaminada con trabajo de otra sesión**: se creó primero la rama
+    `fase-6-notificaciones`, pero mientras se trabajaba apareció ahí un commit
+    ajeno (`05fd1b6`, PWA/manifest de FASE 8) hecho por otra sesión de Claude
+    Code corriendo en paralelo sobre el mismo repo (se detectaron otras ramas
+    activas: `docs/context-fix-contactos-redirect`, `feat/presencia-chat-retro`,
+    `claude/zen-lamport-c934a8`, y un worktree en
+    `.claude/worktrees/zen-lamport-c934a8`). Se resolvió sin tocar esa rama ni
+    su contenido: se guardó el trabajo de FASE 6 con `git stash -u`, se creó
+    una rama nueva y limpia desde `main` (`fase-6-notificaciones-msn`), y se
+    aplicó el stash ahí. `fase-6-notificaciones` se dejó intacta (no se borró
+    ni se le hizo push) por si esa otra sesión la sigue usando.
+  - Verificado con las cuentas de prueba `fase6ana`/`fase6bruno` (Browser pane
+    + Chrome, mismo patrón que fases anteriores): solicitud de amistad enviada
+    y reenviada tras rechazo (toast + detección de "nuevo" corregida), mensaje
+    nuevo con el chat cerrado (toast) y con el chat abierto (sin toast,
+    solo sonido), y el toggle de cada tipo probado ON→OFF→ON confirmando que
+    silencia/reactiva solo ese evento puntual.
+
 - **Email de bienvenida/verificación (adelanto fuera de fase, a pedido explícito del
   usuario, no está en la spec del MVP)**: se dispara automáticamente al registrarse
   (`src/app/registro/page.tsx`, `fetch` a `/api/send-welcome-email` justo después de
@@ -364,3 +430,6 @@ producción (https://msn-revival.vercel.app). El resto de FASE 6
   (ver detalle arriba). Falta verificar un dominio propio en Resend para que
   no caiga en spam / se pueda mandar a cualquier destinatario (no solo al
   dueño de la cuenta de Resend) — pendiente, a definir cuándo se hace.
+- FASE 6: verificada de punta a punta en local (`npm run dev`, cuentas de
+  prueba `fase6ana`/`fase6bruno`). Falta verificar en producción cuando se
+  haga el próximo deploy. Web Push queda para FASE 8 (ver detalle arriba).
