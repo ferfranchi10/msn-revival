@@ -2,12 +2,11 @@
 
 ## Fase actual
 
-**FASE 6 (notificaciones) completada y verificada en local**, salvo Web Push
-(diferido explícitamente a FASE 8, ver detalle abajo). FASE 4 (chat en tiempo
-real) + parte visual de FASE 7 (emoticonos y estética) + FASE 5 (zumbido)
-siguen completadas y verificadas en local y en producción
-(https://msn-revival.vercel.app). Falta verificar FASE 6 en producción cuando
-se haga el próximo deploy.
+**FASE 6 (notificaciones) completada y verificada en local y en producción**
+(https://msn-revival.vercel.app), salvo Web Push (diferido explícitamente a
+FASE 8, ver detalle abajo). FASE 4 (chat en tiempo real) + parte visual de
+FASE 7 (emoticonos y estética) + FASE 5 (zumbido) siguen completadas y
+verificadas en local y en producción.
 
 ## Decisiones tomadas
 
@@ -331,6 +330,20 @@ se haga el próximo deploy.
     nuevo con el chat cerrado (toast) y con el chat abierto (sin toast,
     solo sonido), y el toggle de cada tipo probado ON→OFF→ON confirmando que
     silencia/reactiva solo ese evento puntual.
+  - **Verificado también en producción** (https://msn-revival.vercel.app) tras
+    mergear el PR #9: toast de solicitud de amistad y toast de mensaje nuevo,
+    ambos confirmados en vivo entre `fase6ana`/`fase6bruno`. Durante la
+    verificación se vieron varios `permission-denied` transitorios en la
+    consola de Firestore (`Uncaught Error in snapshot listener`), coincidiendo
+    con una sucesión rápida de rechazar/reenviar/aceptar solicitudes hecha a
+    propósito para forzar el caso de "nuevo" — no volvieron a aparecer tras
+    recargar la pestaña, y las notificaciones funcionaron bien en un ciclo
+    normal (una sola solicitud, un solo accept). No se investigó más a fondo
+    porque no es el flujo real de un usuario armando una prueba de estrés;
+    si se repite en uso normal, revisar las reglas de `conversations`/
+    `messages` (`isFriendshipAccepted`/`isFriendshipParticipant`) por una
+    posible carrera cuando el estado de `friendships` cambia justo cuando se
+    abre una suscripción nueva.
 
 - **Email de bienvenida/verificación (adelanto fuera de fase, a pedido explícito del
   usuario, no está en la spec del MVP)**: se dispara automáticamente al registrarse
@@ -430,6 +443,7 @@ se haga el próximo deploy.
   (ver detalle arriba). Falta verificar un dominio propio en Resend para que
   no caiga en spam / se pueda mandar a cualquier destinatario (no solo al
   dueño de la cuenta de Resend) — pendiente, a definir cuándo se hace.
-- FASE 6: verificada de punta a punta en local (`npm run dev`, cuentas de
-  prueba `fase6ana`/`fase6bruno`). Falta verificar en producción cuando se
-  haga el próximo deploy. Web Push queda para FASE 8 (ver detalle arriba).
+- FASE 6: **verificada de punta a punta en local y en producción**
+  (`https://msn-revival.vercel.app`, PR #9 mergeado). Web Push queda para
+  FASE 8 (ver detalle arriba). Nada pendiente en manos del usuario para esta
+  fase.
