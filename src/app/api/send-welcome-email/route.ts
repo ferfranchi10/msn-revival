@@ -3,7 +3,29 @@ import { getAdminAuth } from "@/lib/firebaseAdmin";
 import { getMailFrom, getMailTransporter } from "@/lib/mailer";
 import { buildWelcomeEmailHtml, buildWelcomeEmailText, SITE_URL } from "@/lib/welcomeEmail";
 
+/** Requiere un ID token de Firebase Auth válido: sin esto, cualquiera podía
+ * mandar un POST con cualquier email y disparar un envío (usando la cuota de
+ * Gmail del proyecto), además de servir de oráculo para saber qué emails
+ * tienen cuenta. El email se toma del token verificado, nunca del body. */
+async function requireCallerEmail(request: Request): Promise<string | null> {
+  const authHeader = request.headers.get("authorization") ?? "";
+  const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : "";
+  if (!idToken) return null;
+
+  try {
+    const decoded = await getAdminAuth().verifyIdToken(idToken);
+    return decoded.email ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: Request) {
+  const email = await requireCallerEmail(request);
+  if (!email) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -11,13 +33,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
 
-  const { email, displayName } = (body ?? {}) as { email?: unknown; displayName?: unknown };
-  if (typeof email !== "string" || !email.trim()) {
-    return NextResponse.json({ error: "email requerido" }, { status: 400 });
-  }
+  const { displayName } = (body ?? {}) as { displayName?: unknown };
 
   try {
-    const verifyLink = await getAdminAuth().generateEmailVerificationLink(email.trim(), {
+    const verifyLink = await getAdminAuth().generateEmailVerificationLink(email, {
       url: `${SITE_URL}/login`,
     });
 
@@ -25,7 +44,7 @@ export async function POST(request: Request) {
 
     await getMailTransporter().sendMail({
       from: getMailFrom(),
-      to: email.trim(),
+      to: email,
       subject: "Bienvenido de vuelta a aquella época 💙",
       html: buildWelcomeEmailHtml({ displayName: name, verifyLink }),
       text: buildWelcomeEmailText({ displayName: name, verifyLink }),

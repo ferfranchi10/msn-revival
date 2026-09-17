@@ -374,12 +374,25 @@ se haga el próximo deploy.
     que usa Gmail para detectar modo oscuro) que reafirman los mismos colores
     del diseño original. Verificado reenviando el mail real y confirmado por
     el usuario en la app de Gmail.
-  - **Pendiente, no depende del código**: el primer envío cayó en spam (normal
-    para un remitente de prueba `onboarding@resend.dev` sin dominio propio
-    verificado — sin SPF/DKIM/DMARC alineados a un dominio real, es esperable).
-    Para que llegue a la bandeja principal del grupo de amigos, verificar un
-    dominio propio en Resend (Dashboard > Domains) y cambiar `EMAIL_FROM` a un
-    remitente de ese dominio.
+  - **Pendiente, no depende del código** *(resuelto, ver bullet siguiente)*: el
+    primer envío cayó en spam (normal para un remitente de prueba
+    `onboarding@resend.dev` sin dominio propio verificado — sin SPF/DKIM/DMARC
+    alineados a un dominio real, es esperable).
+  - **Migración de Resend a Gmail SMTP** (PR #7, posterior al fix de
+    `jose`/ESM de abajo): en producción, Resend en modo de prueba (sin dominio
+    propio verificado) solo entregaba al dueño de la cuenta de Resend — se
+    confirmó con un registro real que el mail nunca le llegó a otra persona
+    del grupo (la novia del usuario). En vez de verificar un dominio propio en
+    Resend, se cambió el envío al relay SMTP de Gmail (`src/lib/mailer.ts`,
+    con `nodemailer`), que entrega a cualquier destinatario gratis (hasta
+    ~500 emails/día) sin necesitar dominio propio. Variables nuevas:
+    `GMAIL_USER` (cuenta remitente, con verificación en 2 pasos activada) y
+    `GMAIL_APP_PASSWORD` (contraseña de aplicación de 16 caracteres) —
+    reemplazan a las que usaba Resend (`RESEND_API_KEY`/`EMAIL_FROM`) en
+    `.env.example` y en las env vars de Vercel. El resto de la infraestructura
+    (Firebase Admin SDK para el link de verificación, plantilla HTML propia en
+    `welcomeEmail.ts`) no cambió. Verificado en producción con destinatarios
+    reales fuera de la cuenta del dueño.
   - **Bug encontrado y corregido en el primer registro real en producción**
     (PR #3 mergeado, cargadas las 5 env vars en Vercel): `/api/send-welcome-email`
     tiraba 500. El log real de Vercel mostraba `Error [ERR_REQUIRE_ESM]` al
@@ -426,10 +439,58 @@ se haga el próximo deploy.
   Firebase por el usuario. Falta verificar la presencia real en producción
   (Vercel) cuando se haga el próximo deploy.
 - Email de bienvenida/verificación: **verificado de punta a punta en producción**
-  (`https://msn-revival.vercel.app`), incluyendo el fix del bug de `jose`/ESM
-  (ver detalle arriba). Falta verificar un dominio propio en Resend para que
-  no caiga en spam / se pueda mandar a cualquier destinatario (no solo al
-  dueño de la cuenta de Resend) — pendiente, a definir cuándo se hace.
+  (`https://msn-revival.vercel.app`), incluyendo el fix del bug de `jose`/ESM y
+  la migración de Resend a Gmail SMTP (ver detalle arriba). El límite de
+  Gmail SMTP (~500 emails/día) es de sobra para un grupo cerrado de amigos;
+  sin dominio propio verificado sigue existiendo cierto riesgo de que caiga en
+  spam, pero ya no bloquea la entrega a destinatarios reales (que era el
+  problema con Resend) — no hay acción pendiente salvo que se quiera mejorar
+  deliverability en el futuro.
 - FASE 6: verificada de punta a punta en local (`npm run dev`, cuentas de
   prueba `fase6ana`/`fase6bruno`). Falta verificar en producción cuando se
   haga el próximo deploy. Web Push queda para FASE 8 (ver detalle arriba).
+
+## Auditoría (2026-09-17) — hallazgos y seguimiento
+
+Auditoría completa del proyecto a pedido del usuario. `lint` + `tsc --noEmit` +
+`build` en verde, sin secretos filtrados en el repo ni en el historial de git,
+sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
+`chore/auditoria-fixes`) y lo que queda pendiente por ser más complejo:
+
+- **Corregido**: nota desactualizada sobre Resend en este archivo (ver arriba).
+- **Corregido**: `/api/send-welcome-email` no tenía autenticación — cualquiera
+  podía mandar un POST con cualquier email y disparar el envío usando la
+  cuota de Gmail del proyecto (además de servir de oráculo para saber qué
+  emails tienen cuenta). Ahora exige el ID token de Firebase Auth del usuario
+  recién creado (`Authorization: Bearer`) y el `email` se toma del token ya
+  verificado server-side (`verifyIdToken`), nunca del body — el cliente ya no
+  puede pedir el envío a un email arbitrario.
+- **Corregido**: sin límite de longitud en los mensajes de chat. Se agregó un
+  `maxLength` de 2000 caracteres en el textarea y en `sendMessage()`.
+- **Corregido**: sin `robots: { index: false }` en el metadata — para una app
+  privada de un grupo cerrado de amigos no tiene sentido que Google la indexe.
+- **Pendiente (complejo, requiere acción manual del usuario)**: las reglas de
+  seguridad de Firestore/Realtime Database siguen sin versionar en el repo
+  (solo publicadas a mano en la consola de Firebase). El contenido documentado
+  en los planes de fase (`C:\Users\ferna\.claude\plans\*.md`) está desactualizado
+  respecto a lo que hay publicado hoy (por ejemplo, el fix de `conversations`
+  de FASE 4 — `allow write` unificado + `isFriendshipAccepted`/
+  `isFriendshipParticipant` en vez de leer el propio doc — no está reflejado
+  en el plan original), así que no se reconstruyó desde ahí para no versionar
+  algo incorrecto. Próximo paso: instalar Firebase CLI, hacer login, y correr
+  algo como `firebase firestore:rules:get` (o copiar manualmente desde la
+  consola) para volcar las reglas reales a `firestore.rules` y
+  `database.rules.json` en el repo, y de ahí en más desplegar con
+  `firebase deploy --only firestore:rules,database` en vez de pegar a mano.
+- **Pendiente (complejo)**: no hay tests automatizados — todo el testing fue
+  manual con cuentas de prueba en cada fase. Sugerencia cuando se retome:
+  empezar por tests unitarios de las funciones puras que no dependen de
+  Firebase (`getFriendshipId`, `getVisibleStatus`, `formatLastSeen`,
+  `escapeHtml`, `renderWithEmoticons`), que no necesitan mocks pesados.
+- **Pendiente (bajo, decisión del usuario)**: hay varias ramas/worktree viejos
+  acumulados de sesiones en paralelo (`fase-6-notificaciones`,
+  `claude/zen-lamport-c934a8`, `feat/presencia-chat-retro`,
+  `docs/context-fix-contactos-redirect`, `feature/mail-bienvenida-verificacion`,
+  y el worktree en `.claude/worktrees/zen-lamport-c934a8`). No se tocaron por
+  las dudas de que alguna otra sesión los siga usando — revisar y borrar los
+  que ya no hagan falta.

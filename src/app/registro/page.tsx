@@ -93,11 +93,21 @@ export default function RegistroPage() {
         await batch.commit();
 
         // Envío best-effort: si el proveedor de email falla, no debe bloquear el registro.
-        fetch("/api/send-welcome-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim(), displayName: trimmedName }),
-        }).catch((emailErr) => console.error("welcome email error", emailErr));
+        // El endpoint exige el ID token del usuario recién creado (no confía en
+        // el email del body) para que no sea un endpoint público sin autenticar.
+        credential.user
+          .getIdToken()
+          .then((idToken) =>
+            fetch("/api/send-welcome-email", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+              },
+              body: JSON.stringify({ displayName: trimmedName }),
+            })
+          )
+          .catch((emailErr) => console.error("welcome email error", emailErr));
       } catch (innerErr) {
         // Username tomado (por el chequeo de arriba, o por una carrera justo contra
         // la escritura): revertimos la cuenta de Auth recién creada para no dejar
