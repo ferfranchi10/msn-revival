@@ -28,6 +28,7 @@ npm run dev      # servidor local (http://localhost:3000)
 npm run build    # build de producción
 npm run start    # servir el build
 npm run lint     # eslint
+npm run test     # vitest (tests unitarios de funciones puras, src/**/*.test.ts[x])
 ```
 
 ## Metodología (obligatoria)

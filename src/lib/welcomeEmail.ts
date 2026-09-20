@@ -5,7 +5,7 @@ export const SITE_URL = "https://msn-revival.vercel.app";
 /** Logo servido por la ruta dinámica `src/app/icon.tsx` (32x32, mismo dibujo que `LogoMark`). */
 const LOGO_URL = `${SITE_URL}/icon`;
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
