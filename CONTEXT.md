@@ -607,6 +607,50 @@ push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
     detrás), y minimizar/cerrar siguen funcionando tras el fix del bug de
     arriba. No se verificó en producción ni en touch/mobile real todavía.
 
+- **FASE 8 — PWA base** (rama `feat/fase-8-pwa-base`). Se consultó el alcance con
+  el usuario y se decidió hacer **primero la PWA base y dejar Web Push como
+  sub-fase aparte**, para no mezclar infraestructura nueva (VAPID, suscripciones,
+  endpoint de envío) con lo básico. Decisiones (no vienen literal del spec):
+  - **Service worker a mano en `public/sw.js`**, sin Serwist/next-pwa: la app es
+    tiempo real (Firestore/RTDB/Auth) y una caché agresiva rompería más de lo que
+    ayuda. Solo cachea `/_next/static/*` (cache-first, son archivos con hash),
+    sonidos e iconos (stale-while-revalidate) y ofrece `public/offline.html`
+    cuando falla una navegación. **Nunca** intercepta otros orígenes (Firebase),
+    `/api/*` ni métodos distintos de GET. Al tocar la lógica o `PRECACHE`, subir
+    `VERSION` en `sw.js` para que `activate` borre las cachés viejas.
+  - `next.config.ts` sirve `/sw.js` con `Cache-Control: no-cache, no-store` (si el
+    SW quedara cacheado, los usuarios no recibirían versiones nuevas).
+  - `ServiceWorkerRegister` registra el SW **solo en producción**; en desarrollo
+    desregistra cualquiera previo, para que una prueba con `npm run start` no
+    tape los cambios de `npm run dev`. Por eso probar el SW exige `build` +
+    `start` (se agregó `msn-revival-prod` a `.claude/launch.json`).
+  - `InstallPrompt`: usa `beforeinstallprompt` en Chromium y una guía de texto en
+    iOS (donde ese evento no existe). Se descarta con la × y se recuerda en
+    `localStorage` (`msn-install-dismissed`). No aparece si ya corre instalada.
+  - `SplashScreen` reemplaza los "Cargando..." de `/`, `/contactos` y `/perfil`;
+    usa el mismo fondo que `background_color` del manifest. No se generaron
+    imágenes de splash de iOS por tamaño de pantalla (son decenas de PNG): en
+    iOS se ve el fondo del manifest y luego este splash.
+  - **Responsive**: `ChatManager` apila los chats en vertical y a ancho completo
+    bajo `sm` (en fila y `w-[300px]` desde `sm`, como antes); la altura de
+    Contactos pasó de `560px` fijo a `min(560px, 100dvh - 6rem)` con mínimo de
+    320px; `viewportFit: "cover"` + `env(safe-area-inset-*)` para el notch de iOS.
+    De paso `<html lang>` pasó de `en` a `es`.
+  - **Verificado** (build de producción con `next start`, Browser pane): SW
+    registrado y `activated`, precaché cargada, cabeceras de `/sw.js` correctas,
+    y con el servidor **apagado** una navegación a `/contactos` muestra
+    `offline.html`. En viewport 375x812: el banner de instalación se ve, no hay
+    scroll horizontal y descartarlo persiste tras recargar.
+  - **Responsive de chats verificado con sesión iniciada** (Browser pane, 375x812):
+    con dos chats abiertos el primer intento dejaba el de abajo cortado (2 x 459
+    px no caben en 812), así que la lista de mensajes pasó a `h-[20dvh]
+    min-h-[110px]` en móvil (`sm:h-[220px]` como antes). Con el ajuste ambos
+    caben completos (caja de texto y botón visibles), sin scroll horizontal; con
+    3 o más el contenedor hace scroll vertical. En escritorio no cambió nada
+    (chats en fila, 300px, lista de 220px).
+  - **No verificado todavía**: la rama iOS del banner y la instalación real en
+    iPhone/Android/desktop. Web Push sigue pendiente.
+
 ## Archivos clave
 
 - [PROJECT_MSN_Revival_MVP.md](PROJECT_MSN_Revival_MVP.md) — spec completa del MVP (visión, pantallas, modelo de datos, fases).

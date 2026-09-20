@@ -152,9 +152,18 @@
       `appleWebApp`/`theme-color` para que "Agregar a pantalla de inicio"
       abra en modo standalone (PR #8, adelantado sin abrir formalmente la
       fase — ver CONTEXT.md).
-- [ ] Service worker, instalación, responsive, pantalla de carga, push
-      notifications (esta última también pendiente de FASE 6, ver CONTEXT.md).
-- [ ] Pruebas en iPhone, Android y desktop.
+- [x] Service worker (`public/sw.js`): caché mínima de estáticos + pantalla
+      `public/offline.html` cuando falla una navegación. No cachea datos ni `/api`.
+      Registrado solo en producción (`ServiceWorkerRegister`).
+- [x] Instalación: banner `InstallPrompt` (diálogo nativo en Chrome/Edge/Android,
+      guía "Compartir → Agregar a pantalla de inicio" en iPhone), descartable.
+- [x] Pantalla de carga: `SplashScreen` con el logo (reemplaza los "Cargando..." sueltos).
+- [x] Responsive móvil: chats a ancho completo y apilados en vertical en pantallas
+      angostas, altura de Contactos acotada a la pantalla, safe-area de iOS.
+- [ ] Web Push (sub-fase aparte, decidido con el usuario): claves VAPID,
+      suscripciones en Firestore, endpoint `/api` de envío y manejo en el SW.
+- [ ] Pruebas en iPhone, Android y desktop (instalación real en dispositivos).
+- [x] Responsive de chats verificado con sesión iniciada (375x812 y escritorio).
 
 ## FASE 9 — Test privado
 

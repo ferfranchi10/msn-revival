@@ -14,6 +14,7 @@ import { RetroWindow } from "@/components/RetroWindow";
 import { AVATARS } from "@/lib/avatars";
 import { auth, db } from "@/lib/firebase";
 import { STATUS_OPTIONS, type UserStatus } from "@/lib/status";
+import { SplashScreen } from "@/components/SplashScreen";
 
 /** Acepta http(s) o `data:image/...` (imagen embebida como base64). */
 const AVATAR_URL_REGEX = /^(https?:\/\/|data:image\/)/i;
@@ -101,11 +102,7 @@ export default function PerfilPage() {
   }
 
   if (loading || !profile) {
-    return (
-      <div className="flex min-h-screen w-full flex-1 items-center justify-center bg-black">
-        <p className="text-white/60">Cargando...</p>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   return (

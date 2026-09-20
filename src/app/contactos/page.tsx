@@ -24,6 +24,7 @@ import { LogoMark } from "@/components/LogoMark";
 import { ProfilePopup } from "@/components/ProfilePopup";
 import { RetroField } from "@/components/RetroField";
 import { RetroWindow } from "@/components/RetroWindow";
+import { SplashScreen } from "@/components/SplashScreen";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { db } from "@/lib/firebase";
@@ -200,16 +201,12 @@ export default function ContactosPage() {
   }, [filteredAccepted, presenceMap, user]);
 
   if (loading || !profile || !user) {
-    return (
-      <div className="flex min-h-screen w-full flex-1 items-center justify-center bg-black">
-        <p className="text-white/60">Cargando...</p>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   return (
     <div className="flex min-h-screen w-full flex-1 items-center justify-center overflow-y-auto bg-black px-4 py-10">
-      <RetroWindow title="MSN Revival" contentClassName="flex h-[560px] flex-col" draggable>
+      <RetroWindow title="MSN Revival" contentClassName="flex h-[min(560px,calc(100dvh-6rem))] min-h-[320px] flex-col" draggable>
         <div className="mb-2 flex shrink-0 items-center gap-2.5 border-b border-[#C4CBD5] pb-2.5">
           <Avatar
             avatarId={profile.avatarId}
