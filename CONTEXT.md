@@ -67,6 +67,20 @@ push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
     `prueba123`) recorriendo el flujo completo. Esas cuentas de prueba quedaron
     creadas en el Firebase real (`msn-revival-df50c`); se pueden borrar desde
     la consola si no se quieren conservar.
+  - Bug post-Fase 2: `src/app/login/page.tsx` seguía haciendo
+    `router.push("/perfil")` tras un login exitoso en vez de `/contactos`.
+    Corregido y mergeado a `main` en
+    [PR #1](https://github.com/ferfranchi10/msn-revival/pull/1).
+  - **Vercel: las env vars deben estar tildadas también para Preview.** Al abrir
+    ese PR se detectó que las `NEXT_PUBLIC_FIREBASE_*` estaban tildadas solo
+    para el entorno **Production**, no **Preview** — el primer deploy de Preview
+    de un PR fallaba en build (`auth/invalid-api-key`) porque
+    `src/lib/firebase.ts` llama a `getAuth()` a nivel de módulo y eso se
+    ejecuta al pre-renderizar `/`. El usuario tildó también Preview en Vercel →
+    Settings → Environment Variables; verificado que tanto el deploy de Preview
+    del PR como el de Production (tras el merge) terminan en verde. Si alguna
+    vez un deploy de Preview falla con `auth/invalid-api-key`, revisar primero
+    eso.
 - **FASE 3 — Presencia**: la conexión real (online/offline) vive enteramente en
   Realtime Database, no en Firestore. Decisiones (no vienen literal del spec):
   - Se sacaron los campos `isOnline`/`lastSeen` de `users/{uid}` en Firestore
@@ -824,11 +838,13 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
     navegador (reglas de seguridad, listeners en tiempo real, componentes, el
     service worker, los endpoints `/api/push/*`): eso sigue siendo verificación
     manual con cuentas de prueba, como en cada fase.
-- **Pendiente (bajo, decisión del usuario)**: hay varias ramas/worktree viejos
-  acumulados de sesiones en paralelo (`fase-6-notificaciones`,
-  `claude/zen-lamport-c934a8`, `feat/presencia-chat-retro`,
-  `docs/context-fix-contactos-redirect`, `feature/mail-bienvenida-verificacion`,
-  y el worktree en `.claude/worktrees/zen-lamport-c934a8`). No se tocaron por
-  las dudas de que alguna otra sesión los siga usando — revisar y borrar los
-  que ya no hagan falta. Se suma a esta lista `docs/fase-6-verificacion-produccion`
-  (ya mergeada acá, se puede borrar).
+- **Hecho (2026-09-20)**: limpieza de las ramas y el worktree acumulados de
+  sesiones en paralelo. Antes de borrar cada una se comprobó contra `main`
+  (`git merge-base --is-ancestor` para las mergeadas y `git cherry` para las que
+  `main` incorporó con otro hash): todas estaban ya en `main` por contenido, salvo
+  dos casos — `claude/zen-lamport-c934a8` (un commit vacío que solo redisparaba
+  un deploy de Vercel) y `docs/context-fix-contactos-redirect`, cuya única
+  información útil (la nota sobre las env vars de Vercel para Preview, ver la
+  sección de FASE 2) se rescató a este archivo antes de borrarla. También se
+  quitó el worktree `.claude/worktrees/zen-lamport-c934a8` (estaba limpio). Hoy
+  el repo solo tiene `main` (más las ramas de trabajo que se abran).
