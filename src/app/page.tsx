@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { SplashScreen } from "@/components/SplashScreen";
 
 export default function Home() {
   const router = useRouter();
@@ -13,9 +14,5 @@ export default function Home() {
     router.replace(user ? "/contactos" : "/login");
   }, [loading, user, router]);
 
-  return (
-    <div className="flex flex-1 items-center justify-center bg-gradient-to-b from-sky-100 to-sky-200">
-      <p className="text-sky-900/60">Cargando...</p>
-    </div>
-  );
+  return <SplashScreen />;
 }

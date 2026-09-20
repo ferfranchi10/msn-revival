@@ -104,7 +104,7 @@ export function ChatWindow({ uid }: { uid: string }) {
     <div
       ref={elementRef}
       onMouseDown={() => focusChat(uid)}
-      className={`flex w-[300px] flex-col overflow-hidden rounded-t-[6px] border border-[#8fa3c7] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.45)] ${
+      className={`flex w-full flex-col sm:w-[300px] overflow-hidden rounded-t-[6px] border border-[#8fa3c7] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.45)] ${
         isShaking ? "animate-msn-shake" : ""
       }`}
       style={{
@@ -152,7 +152,7 @@ export function ChatWindow({ uid }: { uid: string }) {
             </div>
           </div>
 
-          <div ref={listRef} className="retro-scroll h-[220px] overflow-y-auto bg-white px-2 py-2 text-[13px]">
+          <div ref={listRef} className="retro-scroll h-[20dvh] min-h-[110px] overflow-y-auto sm:h-[220px] bg-white px-2 py-2 text-[13px]">
             {messages.length === 0 && (
               <p className="text-[12px] text-[#33445A]/50">Todavía no hay mensajes.</p>
             )}

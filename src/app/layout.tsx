@@ -8,6 +8,8 @@ import { NudgeManager } from "@/components/NudgeManager";
 import { MessageManager } from "@/components/MessageManager";
 import { FriendRequestManager } from "@/components/FriendRequestManager";
 import { ChatManager } from "@/components/ChatManager";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,15 +52,18 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0b1220",
+  // Necesario para que env(safe-area-inset-*) valga algo en iPhone con notch/barra de estado translúcida.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <ServiceWorkerRegister />
         <AuthProvider>
           <ChatProvider>
             {children}
@@ -67,6 +72,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <MessageManager />
             <FriendRequestManager />
             <ChatManager />
+            <InstallPrompt />
           </ChatProvider>
         </AuthProvider>
       </body>
