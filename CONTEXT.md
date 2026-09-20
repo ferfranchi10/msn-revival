@@ -783,11 +783,28 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
   consola) para volcar las reglas reales a `firestore.rules` y
   `database.rules.json` en el repo, y de ahí en más desplegar con
   `firebase deploy --only firestore:rules,database` en vez de pegar a mano.
-- **Pendiente (complejo)**: no hay tests automatizados — todo el testing fue
-  manual con cuentas de prueba en cada fase. Sugerencia cuando se retome:
-  empezar por tests unitarios de las funciones puras que no dependen de
-  Firebase (`getFriendshipId`, `getVisibleStatus`, `formatLastSeen`,
-  `escapeHtml`, `renderWithEmoticons`), que no necesitan mocks pesados.
+- **Hecho (2026-09-20, rama `chore/tests-funciones-puras`)**: tests
+  automatizados de las funciones puras, con **Vitest** (`npm run test`, 46 tests
+  en 7 archivos junto a cada módulo, `src/lib/*.test.ts[x]`): `getFriendshipId`/
+  `getOtherUid`, `getStatus`/`getVisibleStatus`, `getAvatar`, `formatLastSeen`
+  (con reloj falso), `renderWithEmoticons` (incluye que el catálogo no repita
+  shortcodes), `escapeHtml`/plantilla del email (que no deje pasar HTML del
+  nombre) y `isAllowedEndpoint`/`deviceIdFor` del push (la defensa contra SSRF).
+  - Se fijó **`vitest@3`**, no la última (v5): la v5 pide `@types/node` >= 22 y
+    el proyecto usa `^20`; se prefirió no subir los tipos de Node solo por esto.
+  - Los módulos que importan el cliente de Firebase (`presence.ts`) o el Admin SDK
+    (`pushServer.ts`) se prueban mockeando esos imports (`vi.mock`), porque en
+    los tests no existen las variables de entorno con las que se inicializan.
+  - Se exportó `escapeHtml` de `welcomeEmail.ts` (antes era privada) para poder
+    probarla.
+  - Se comprobó que los tests **detectan fallos** rompiendo el código a
+    propósito. Eso destapó un hueco: quitar el ancla `(^|\.)` de la allowlist de
+    push no fallaba ningún test (dejaba pasar `evilfcm.googleapis.com`); se
+    agregó ese caso y ahora sí falla.
+  - **Sigue sin cobertura automática** todo lo que depende de Firebase o del
+    navegador (reglas de seguridad, listeners en tiempo real, componentes, el
+    service worker, los endpoints `/api/push/*`): eso sigue siendo verificación
+    manual con cuentas de prueba, como en cada fase.
 - **Pendiente (bajo, decisión del usuario)**: hay varias ramas/worktree viejos
   acumulados de sesiones en paralelo (`fase-6-notificaciones`,
   `claude/zen-lamport-c934a8`, `feat/presencia-chat-retro`,
