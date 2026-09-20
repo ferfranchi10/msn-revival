@@ -121,8 +121,7 @@
 - [x] Sonidos independientes: cada tipo de evento tiene su propio archivo/sonido
       (`connect.mp3`, `friend-request.mp3`, `nudge.mp3`, `message.mp3`), todos
       creados por el usuario para el proyecto.
-- [ ] Web Push — diferido a FASE 8 (PWA): requiere el service worker que se
-      arma en esa fase, no tiene sentido adelantarlo suelto. Ver CONTEXT.md.
+- [x] Web Push — se hizo dentro de FASE 8 (PWA), con el service worker. Ver CONTEXT.md.
 
 ## FASE 7 — Emoticonos y estética
 
@@ -160,8 +159,13 @@
 - [x] Pantalla de carga: `SplashScreen` con el logo (reemplaza los "Cargando..." sueltos).
 - [x] Responsive móvil: chats a ancho completo y apilados en vertical en pantallas
       angostas, altura de Contactos acotada a la pantalla, safe-area de iOS.
-- [ ] Web Push (sub-fase aparte, decidido con el usuario): claves VAPID,
-      suscripciones en Firestore, endpoint `/api` de envío y manejo en el SW.
+- [x] Web Push (sub-fase aparte, decidido con el usuario): mensaje, zumbido y
+      solicitud de amistad llegan como notificación aunque la app esté cerrada o
+      en segundo plano. Claves VAPID, dispositivos en Firestore (`pushDevices`,
+      solo Admin SDK), `/api/push/send` y `/api/push/subscribe`, handlers en el SW,
+      botón en Perfil y respeto de los 3 toggles de notificación. Verificado en
+      local con Chrome real (ver CONTEXT.md). Falta cargar las 3 env vars en Vercel.
+- [ ] Web Push en producción (Vercel) y en iPhone/Android reales.
 - [ ] Pruebas en iPhone, Android y desktop (instalación real en dispositivos).
 - [x] Responsive de chats verificado con sesión iniciada (375x812 y escritorio).
 

@@ -15,6 +15,8 @@ import { AVATARS } from "@/lib/avatars";
 import { auth, db } from "@/lib/firebase";
 import { STATUS_OPTIONS, type UserStatus } from "@/lib/status";
 import { SplashScreen } from "@/components/SplashScreen";
+import { PushToggle } from "@/components/PushToggle";
+import { disablePush } from "@/lib/pushClient";
 
 /** Acepta http(s) o `data:image/...` (imagen embebida como base64). */
 const AVATAR_URL_REGEX = /^(https?:\/\/|data:image\/)/i;
@@ -97,6 +99,8 @@ export default function PerfilPage() {
   }
 
   async function handleLogout() {
+    // La suscripción push es del dispositivo: si no se da de baja, el próximo que inicie sesión acá seguiría recibiendo los avisos de esta cuenta.
+    await disablePush().catch(() => {});
     await signOut(auth);
     router.push("/login");
   }
@@ -250,6 +254,7 @@ export default function PerfilPage() {
                 />
                 Mensajes nuevos
               </label>
+              <PushToggle />
             </div>
           </div>
 

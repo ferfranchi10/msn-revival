@@ -9,6 +9,7 @@ import { MessageManager } from "@/components/MessageManager";
 import { FriendRequestManager } from "@/components/FriendRequestManager";
 import { ChatManager } from "@/components/ChatManager";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { PushSync } from "@/components/PushSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 const geistSans = Geist({
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <MessageManager />
             <FriendRequestManager />
             <ChatManager />
+            <PushSync />
             <InstallPrompt />
           </ChatProvider>
         </AuthProvider>

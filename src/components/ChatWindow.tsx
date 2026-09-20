@@ -11,6 +11,7 @@ import { useTyping } from "@/hooks/useTyping";
 import { getConversationId, MAX_MESSAGE_LENGTH, sendMessage } from "@/lib/chat";
 import { renderWithEmoticons } from "@/lib/emoticons";
 import { NUDGE_COOLDOWN_MS, sendNudge } from "@/lib/nudge";
+import { notifyPush } from "@/lib/pushClient";
 import { playNudgeSound } from "@/lib/sound";
 import { getStatus } from "@/lib/status";
 import { RETRO_FONT } from "@/lib/theme";
@@ -76,6 +77,7 @@ export function ChatWindow({ uid }: { uid: string }) {
     playNudgeSound();
     try {
       await sendNudge(conversationId, user.uid);
+      notifyPush("nudge", uid);
     } catch {
       // Rechazado por el cooldown reforzado en el servidor o sin conexión: el
       // aviso local (temblor + sonido) ya se mostró igual.
@@ -88,6 +90,7 @@ export function ChatWindow({ uid }: { uid: string }) {
     setText("");
     const participants = [user.uid, uid].sort() as [string, string];
     await sendMessage(conversationId, participants, user.uid, trimmed);
+    notifyPush("message", uid);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
