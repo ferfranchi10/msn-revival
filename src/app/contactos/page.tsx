@@ -22,6 +22,7 @@ import { ContactGroup } from "@/components/ContactGroup";
 import { FriendRow } from "@/components/FriendRow";
 import { LogoMark } from "@/components/LogoMark";
 import { ProfilePopup } from "@/components/ProfilePopup";
+import { AddContactIcon } from "@/components/StatusBuddy";
 import { RetroField } from "@/components/RetroField";
 import { RetroWindow } from "@/components/RetroWindow";
 import { SplashScreen } from "@/components/SplashScreen";
@@ -259,13 +260,14 @@ export default function ContactosPage() {
         <div className="mb-2 flex shrink-0 items-center gap-1 border-b border-[#C4CBD5] pb-1.5">
           <button
             type="button"
-            title="Agregar contacto"
+            aria-expanded={showAddPanel}
             onClick={() => setShowAddPanel((v) => !v)}
-            className={`flex h-6 w-6 items-center justify-center rounded-[2px] text-[13px] hover:bg-[#E8F1FC] ${
+            className={`flex items-center gap-1.5 rounded-[2px] px-1.5 py-0.5 text-[12px] font-semibold text-[#1F3F6E] hover:bg-[#E8F1FC] ${
               showAddPanel ? "bg-[#CDE3FA]" : ""
             }`}
           >
-            ➕
+            <AddContactIcon />
+            Agregar un contacto
           </button>
         </div>
 

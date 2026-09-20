@@ -34,15 +34,25 @@ function subscribeToRawPresence(
   uid: string,
   callback: (presence: PresenceRecord | null) => void
 ): () => void {
-  return onValue(ref(rtdb, `status/${uid}`), (snapshot) => {
-    callback(snapshot.exists() ? (snapshot.val() as PresenceRecord) : null);
-  });
+  return onValue(
+    ref(rtdb, `status/${uid}`),
+    (snapshot) => {
+      callback(snapshot.exists() ? (snapshot.val() as PresenceRecord) : null);
+    },
+    (err) => {
+      // Si la lectura se deniega, tratar al contacto como desconectado en vez de no emitir nunca.
+      console.error(`No se pudo leer la presencia de ${uid}`, err);
+      callback(null);
+    }
+  );
 }
 
 export type FriendPresence = {
   profile: UserProfile | null;
   visibleStatus: PresenceStatus;
   lastChanged: number | null;
+  /** `false` hasta la primera emisión real; distingue "cargando" de "perfil inexistente o ilegible" (`profile` null con `loaded` true). */
+  loaded: boolean;
 };
 
 /**
@@ -69,14 +79,24 @@ export function subscribeToFriendPresence(
   function emit() {
     if (!presenceLoaded || !profileLoaded) return;
     const visibleStatus = profile ? getVisibleStatus(profile.status, connected) : "offline";
-    callback({ profile, visibleStatus, lastChanged });
+    callback({ profile, visibleStatus, lastChanged, loaded: true });
   }
 
-  const unsubProfile = onSnapshot(doc(db, "users", uid), (snapshot) => {
-    profile = snapshot.exists() ? (snapshot.data() as UserProfile) : null;
-    profileLoaded = true;
-    emit();
-  });
+  const unsubProfile = onSnapshot(
+    doc(db, "users", uid),
+    (snapshot) => {
+      profile = snapshot.exists() ? (snapshot.data() as UserProfile) : null;
+      profileLoaded = true;
+      emit();
+    },
+    (err) => {
+      // Sin este callback un fallo de lectura dejaba la fila en "Cargando..." para siempre.
+      console.error(`No se pudo leer el perfil de ${uid}`, err);
+      profile = null;
+      profileLoaded = true;
+      emit();
+    }
+  );
 
   const unsubPresence = subscribeToRawPresence(uid, (presence) => {
     const isFirstRead = !presenceLoaded;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { subscribeToFriendPresence, type FriendPresence } from "@/lib/presence";
 
-const EMPTY: FriendPresence = { profile: null, visibleStatus: "offline", lastChanged: null };
+const EMPTY: FriendPresence = { profile: null, visibleStatus: "offline", lastChanged: null, loaded: false };
 
 /** Presencia visible (estado manual + conexión real, ya combinados) de un contacto. */
 export function useFriendPresence(uid: string): FriendPresence {
