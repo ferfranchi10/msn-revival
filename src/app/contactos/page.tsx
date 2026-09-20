@@ -29,6 +29,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { db } from "@/lib/firebase";
 import { getFriendshipId, getOtherUid, type Friendship } from "@/lib/friendships";
+import { notifyPush } from "@/lib/pushClient";
 import { useFriendsPresence } from "@/hooks/useFriendsPresence";
 import { STATUS_OPTIONS, type UserStatus } from "@/lib/status";
 import { useFriendships } from "@/hooks/useFriendships";
@@ -129,6 +130,7 @@ export default function ContactosPage() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      notifyPush("friendRequest", otherUid);
     } catch {
       setFeedback("No se pudo enviar la solicitud. Puede que ya exista una relación con ese usuario.");
     }

@@ -651,6 +651,64 @@ push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
   - **No verificado todavía**: la rama iOS del banner y la instalación real en
     iPhone/Android/desktop. Web Push sigue pendiente.
 
+- **FASE 8 — Web Push** (rama `feat/fase-8-web-push`). Notifica mensaje nuevo,
+  zumbido y solicitud de amistad aunque la app esté cerrada. Decisiones (no vienen
+  literal del spec):
+  - **Sin Cloud Functions (plan Spark)**: el push lo dispara el **cliente
+    remitente** llamando a `POST /api/push/send` (Vercel) justo después de enviar.
+    Como cualquier amigo autenticado puede llamar a ese endpoint, el servidor
+    **no confía en el body**: solo recibe `type` y `toUid`; verifica con el Admin
+    SDK la relación (mensaje/zumbido → `friendships` aceptada; solicitud →
+    pendiente y creada por el que llama), toma el **texto real del mensaje desde
+    Firestore** (solo si es el último, enviado por el que llama y de hace <60 s),
+    marca `pushedAt` en una transacción (un push por mensaje aunque se repita la
+    llamada) y limita el zumbido a 1 cada 5 s y la solicitud a 1 por minuto
+    (`pushThrottle`, también transacción, vale entre instancias serverless).
+  - **Suscripciones en `pushDevices/{sha256(endpoint)}`** (`uid`, `endpoint`,
+    `keys`), escritas y leídas **solo con el Admin SDK**. Firestore deniega por
+    defecto lo que no tiene regla, así que **no se tocó ninguna regla de la
+    consola**. El id por hash del endpoint garantiza que un dispositivo nunca
+    quede asociado a dos usuarios a la vez. `/api/push/subscribe` solo acepta
+    endpoints de Google/Mozilla/Apple/Microsoft (allowlist), porque el servidor
+    hace un POST a esa URL y aceptar cualquiera sería un SSRF.
+  - **Preferencias**: el servidor respeta `notifyNewMessage`/`notifyNudge`/
+    `notifyFriendRequest` del destinatario (los mismos toggles que los avisos
+    dentro de la app; solo se silencia si están explícitamente en `false`).
+  - **Service worker** (`public/sw.js`): si hay una ventana de la app **visible**
+    no muestra nada (ya salen el toast y el sonido); en Safari/iOS sí muestra
+    siempre, porque Apple revoca la suscripción si se omite una notificación. El
+    clic enfoca la app abierta o abre `/contactos`.
+  - **La suscripción es del navegador, no de la cuenta** — dos problemas reales
+    encontrados en la verificación y corregidos:
+    1. Si se cambia de usuario sin "Cerrar sesión" desde la app, el servidor
+       seguía asociando el dispositivo al usuario anterior (el envío daba
+       `sent: 0`). `PushSync` (manager en el layout) re-registra la suscripción
+       existente a nombre del usuario actual en cada inicio de sesión. Además
+       "Cerrar sesión" ahora da de baja el dispositivo (`disablePush`).
+    2. Una suscripción creada con **otra clave VAPID** (p. ej. tras regenerar las
+       claves) hace que FCM rechace los envíos con **403**. `ensureSubscription`
+       compara la clave de la suscripción con la pública actual y la reemplaza
+       (sin volver a pedir permiso). Verificado forzando una suscripción con una
+       clave distinta: tras recargar quedó con la clave correcta.
+  - **Variables nuevas**: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
+    (secreta), `VAPID_SUBJECT` (`mailto:`). Sin ellas el push queda desactivado y
+    el resto de la app funciona igual. **Para producción hay que cargarlas en
+    Vercel** (la privada como "Sensitive"). Par de claves generado por el usuario
+    con `npx web-push generate-vapid-keys`.
+  - **Verificado en local** (build de producción; receptor = Chrome real con
+    `fase6bruno`, remitente = Fernando en el Browser pane): mensaje y zumbido
+    llegan con el nombre del remitente, el texto y su `tag`, con la pestaña del
+    receptor oculta; con la pestaña visible se suprime; el toggle apagado
+    responde `silenciado` y no envía. Rechazos comprobados: sin token o con token
+    falso → 401; repetir la misma petición → `ya enviado`; solicitud a un amigo ya
+    aceptado, mensaje a un uid sin relación → 403; a uno mismo o tipo inválido →
+    400; dos zumbidos seguidos → `demasiado seguido`.
+  - **No verificado todavía**: el envío de solicitud de amistad de punta a punta
+    (solo sus rechazos, no el camino feliz), el clic sobre la notificación, Safari/
+    iPhone (requiere la app instalada), Android, y **producción (Vercel)**.
+    Limitación conocida: el push de zumbido solo tiene el límite de 5 s por par,
+    no verifica que el zumbido exista en Realtime Database.
+
 ## Archivos clave
 
 - [PROJECT_MSN_Revival_MVP.md](PROJECT_MSN_Revival_MVP.md) — spec completa del MVP (visión, pantallas, modelo de datos, fases).
