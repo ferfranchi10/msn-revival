@@ -29,6 +29,8 @@ npm run build    # build de producción
 npm run start    # servir el build
 npm run lint     # eslint
 npm run test     # vitest (tests unitarios de funciones puras, src/**/*.test.ts[x])
+npm run rules:check   # valida firestore.rules + database.rules.json contra el proyecto (dry-run, no publica)
+npm run rules:deploy  # PUBLICA las reglas en producción (pide firebase login previo)
 ```
 
 ## Metodología (obligatoria)

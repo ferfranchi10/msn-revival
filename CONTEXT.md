@@ -770,19 +770,38 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
   `maxLength` de 2000 caracteres en el textarea y en `sendMessage()`.
 - **Corregido**: sin `robots: { index: false }` en el metadata — para una app
   privada de un grupo cerrado de amigos no tiene sentido que Google la indexe.
-- **Pendiente (complejo, requiere acción manual del usuario)**: las reglas de
-  seguridad de Firestore/Realtime Database siguen sin versionar en el repo
-  (solo publicadas a mano en la consola de Firebase). El contenido documentado
-  en los planes de fase (`C:\Users\ferna\.claude\plans\*.md`) está desactualizado
-  respecto a lo que hay publicado hoy (por ejemplo, el fix de `conversations`
-  de FASE 4 — `allow write` unificado + `isFriendshipAccepted`/
-  `isFriendshipParticipant` en vez de leer el propio doc — no está reflejado
-  en el plan original), así que no se reconstruyó desde ahí para no versionar
-  algo incorrecto. Próximo paso: instalar Firebase CLI, hacer login, y correr
-  algo como `firebase firestore:rules:get` (o copiar manualmente desde la
-  consola) para volcar las reglas reales a `firestore.rules` y
-  `database.rules.json` en el repo, y de ahí en más desplegar con
-  `firebase deploy --only firestore:rules,database` en vez de pegar a mano.
+- **Hecho (2026-09-20, rama `chore/reglas-firebase`)**: las reglas de seguridad
+  ya están **versionadas en el repo**, volcadas desde lo que está realmente
+  publicado (no reconstruidas de los planes de fase, que están desactualizados):
+  `firestore.rules`, `firestore.indexes.json` (vacío: no hay índices
+  compuestos), `database.rules.json`, `firebase.json` y `.firebaserc`
+  (proyecto `msn-revival-df50c`, su ID no es secreto).
+  - **Cómo se obtuvieron**: Firestore con `firebase init firestore` (descarga las
+    reglas publicadas si no existe el archivo local; es interactivo, lo corrió el
+    usuario, y se respondió **no** a instalar las "agent skills" de Firebase); Realtime
+    Database con `firebase database:get /.settings/rules` (en Git Bash hace falta
+    `MSYS_NO_PATHCONV=1`, si no convierte el `/` inicial en una ruta de Windows).
+  - **Flujo de ahora en más**: editar los archivos de reglas → `npm run
+    rules:check` (dry-run: compila y valida contra el proyecto, **no publica**) →
+    `npm run rules:deploy` (publica; requiere `firebase login`) — en vez de
+    pegar a mano en la consola. El archivo del repo pasa a ser la fuente de
+    verdad: no editar en la consola sin volcar el cambio acá.
+  - Confirmado al leerlas: incluyen el fix de FASE 4 (`allow write` unificado +
+    `isFriendshipAccepted`/`isFriendshipParticipant`) y **no hay regla para
+    `pushDevices` ni `pushThrottle`**, así que el cliente no puede tocarlas (solo
+    el Admin SDK, como se diseñó para Web Push).
+  - **Observaciones de seguridad al revisarlas (no se cambiaron: esta tarea es
+    solo versionar lo existente, sin alterar comportamiento)**:
+    1. `users`: `allow read` a **cualquier usuario autenticado** expone el
+       `email` (y el resto del perfil) de todos. Si el registro está abierto a
+       cualquiera que conozca la URL, cualquiera puede listar los emails del
+       grupo. Mitigar moviendo el email a una subcolección/doc privado, o
+       cerrando el registro.
+    2. `messages`: no valida el largo de `text` (el tope de 2000 caracteres solo
+       existe en el cliente) ni que `createdAt == request.time`, así que un
+       cliente modificado puede mandar mensajes enormes o con fecha falsa.
+    3. `usernames`: cualquier usuario autenticado puede crear el doc de
+       cualquier username libre sin crear su cuenta (squatting de nombres).
 - **Hecho (2026-09-20, rama `chore/tests-funciones-puras`)**: tests
   automatizados de las funciones puras, con **Vitest** (`npm run test`, 46 tests
   en 7 archivos junto a cada módulo, `src/lib/*.test.ts[x]`): `getFriendshipId`/

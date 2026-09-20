@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "rules:check": "firebase deploy --only firestore:rules,database --dry-run",
+    "rules:deploy": "firebase deploy --only firestore:rules,database",
     "test": "vitest run"
   },
   "dependencies": {
