@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isFriendshipAccepted(id) {
+      return get(/databases/$(database)/documents/friendships/$(id)).data.status == 'accepted';
+    }
+    function isFriendshipParticipant(id) {
+      let f = get(/databases/$(database)/documents/friendships/$(id)).data;
+      return request.auth.uid == f.userId || request.auth.uid == f.friendId;
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.usernameLower is string;
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.username == resource.data.username
+                    && request.resource.data.usernameLower == resource.data.usernameLower;
+      allow delete: if false;
+    }
+    match /usernames/{usernameLower} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+    match /friendships/{friendshipId} {
+      allow read: if request.auth != null
+                  && (request.auth.uid == resource.data.userId
+                      || request.auth.uid == resource.data.friendId);
+
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.friendId != request.auth.uid
+                    && request.resource.data.status == 'pending'
+                    && friendshipId == (request.resource.data.userId < request.resource.data.friendId
+                          ? request.resource.data.userId + '_' + request.resource.data.friendId
+                          : request.resource.data.friendId + '_' + request.resource.data.userId);
+
+      allow update: if request.auth != null && (
+                      (resource.data.status == 'pending'
+                        && request.auth.uid == resource.data.friendId
+                        && request.resource.data.status == 'accepted'
+                        && request.resource.data.userId == resource.data.userId
+                        && request.resource.data.friendId == resource.data.friendId)
+                      ||
+                      ((resource.data.status == 'pending' || resource.data.status == 'accepted')
+                        && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.friendId)
+                        && request.resource.data.status == 'blocked'
+                        && request.resource.data.blockedBy == request.auth.uid
+                        && request.resource.data.userId == resource.data.userId
+                        && request.resource.data.friendId == resource.data.friendId)
+                    );
+
+      allow delete: if request.auth != null && (
+                      (resource.data.status == 'pending'
+                        && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.friendId))
+                      ||
+                      (resource.data.status == 'accepted'
+                        && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.friendId))
+                      ||
+                      (resource.data.status == 'blocked' && request.auth.uid == resource.data.blockedBy)
+                    );
+    }
+    match /conversations/{conversationId} {
+      allow read: if request.auth != null && isFriendshipParticipant(conversationId);
+      allow write: if request.auth != null
+                   && request.auth.uid in request.resource.data.participants
+                   && request.resource.data.participants.size() == 2
+                   && isFriendshipAccepted(conversationId);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if request.auth != null
+                    && isFriendshipAccepted(conversationId)
+                    && isFriendshipParticipant(conversationId);
+        allow create: if request.auth != null
+                      && request.resource.data.senderId == request.auth.uid
+                      && isFriendshipAccepted(conversationId)
+                      && isFriendshipParticipant(conversationId);
+        allow update, delete: if false;
+      }
+    }
+  }
+}
