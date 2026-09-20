@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "rules:check": "firebase deploy --only firestore:rules,database --dry-run",
-    "rules:deploy": "firebase deploy --only firestore:rules,database"
+    "rules:deploy": "firebase deploy --only firestore:rules,database",
+    "test": "vitest run"
   },
   "dependencies": {
     "firebase": "^12.19.0",
@@ -32,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
