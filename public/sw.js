@@ -86,7 +86,7 @@ self.addEventListener("push", (event) => {
       }
       await self.registration.showNotification(data.title || "MSN Revival", {
         body: data.body || "",
-        icon: "/manifest-icon/192",
+        icon: data.icon || "/manifest-icon/192",
         badge: "/manifest-icon/192",
         tag: data.tag,
         renotify: Boolean(data.tag),

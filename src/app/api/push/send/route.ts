@@ -98,7 +98,13 @@ export async function POST(request: Request) {
     if (!(await claimThrottle(`nudge_${friendshipId}_${callerUid}`, NUDGE_COOLDOWN_MS))) {
       return NextResponse.json({ ok: true, sent: 0, reason: "demasiado seguido" });
     }
-    payload = { title: senderName, body: "te ha enviado un zumbido 📳", tag: `nudge-${callerUid}`, url: "/contactos" };
+    payload = {
+      title: senderName,
+      body: "te ha enviado un zumbido",
+      tag: `nudge-${callerUid}`,
+      url: "/contactos",
+      icon: "/zumbido-notif.png",
+    };
     ttlSeconds = 30;
   } else {
     if (!(await claimThrottle(`friendreq_${friendshipId}`, FRIEND_REQUEST_COOLDOWN_MS))) {
