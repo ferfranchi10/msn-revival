@@ -79,7 +79,11 @@ export function NudgeManager() {
         >
           <Avatar avatarId={toast.avatarId} avatarUrl={toast.avatarUrl} className="h-8 w-8 text-base" />
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-[#1F2D3D]">📳 {toast.displayName} te ha enviado un zumbido</p>
+            <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1F2D3D]">
+              {/* eslint-disable-next-line @next/next/no-img-element -- asset propio pequeño, no necesita optimización. */}
+              <img src="/zumbido.png" width={24} height={16} alt="" className="shrink-0" />
+              {toast.displayName} te ha enviado un zumbido
+            </p>
           </div>
         </div>
       ))}

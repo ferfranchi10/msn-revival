@@ -202,9 +202,10 @@ export function ChatWindow({ uid }: { uid: string }) {
               onClick={handleNudge}
               disabled={nudgeRemaining > 0}
               title={nudgeRemaining > 0 ? `Espera ${nudgeRemaining}s` : "Enviar zumbido"}
-              className="flex h-6 w-6 items-center justify-center rounded-[2px] text-[13px] hover:bg-[#E8F1FC] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+              className="flex h-6 w-8 items-center justify-center rounded-[2px] hover:bg-[#E8F1FC] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
             >
-              📳
+              {/* eslint-disable-next-line @next/next/no-img-element -- asset propio pequeño, no necesita optimización. */}
+              <img src="/zumbido.png" width={24} height={16} alt="Zumbido" />
             </button>
           </div>
 

@@ -13,6 +13,8 @@ export type PushPayload = {
   /** Notificaciones con el mismo `tag` se reemplazan entre sí en vez de apilarse. */
   tag: string;
   url: string;
+  /** Icono propio de la notificación; si falta, el service worker usa el logo de la app. */
+  icon?: string;
 };
 
 export type StoredSubscription = {
