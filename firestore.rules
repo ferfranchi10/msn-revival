@@ -11,19 +11,31 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if request.auth != null;
+      // El perfil es legible por cualquier usuario autenticado, así que NO puede llevar
+      // el email (vive solo en Firebase Auth). En `update` se compara con `diff` en vez
+      // de prohibir el campo, para no romper el guardado de perfiles viejos que todavía
+      // lo conserven hasta que se los limpie.
       allow create: if request.auth != null
                     && request.auth.uid == userId
-                    && request.resource.data.usernameLower is string;
+                    && request.resource.data.usernameLower is string
+                    && !('email' in request.resource.data)
+                    // El username debe estar reservado a nombre de este usuario en el mismo batch.
+                    && getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.usernameLower)).data.uid == userId;
       allow update: if request.auth != null
                     && request.auth.uid == userId
                     && request.resource.data.username == resource.data.username
-                    && request.resource.data.usernameLower == resource.data.usernameLower;
+                    && request.resource.data.usernameLower == resource.data.usernameLower
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email']);
       allow delete: if false;
     }
     match /usernames/{usernameLower} {
       allow read: if request.auth != null;
+      // Solo se puede reservar un username creando a la vez el perfil que lo usa (mismo
+      // batch): evita reservar nombres sin tener cuenta.
       allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid;
+                    && request.resource.data.keys().hasOnly(['uid'])
+                    && request.resource.data.uid == request.auth.uid
+                    && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.usernameLower == usernameLower;
       allow update, delete: if false;
     }
     match /friendships/{friendshipId} {
@@ -76,8 +88,15 @@ service cloud.firestore {
         allow read: if request.auth != null
                     && isFriendshipAccepted(conversationId)
                     && isFriendshipParticipant(conversationId);
+        // Solo esos tres campos (el Admin SDK agrega `pushedAt` saltándose las reglas).
+        // Los 2000 caracteres deben coincidir con MAX_MESSAGE_LENGTH de src/lib/chat.ts.
         allow create: if request.auth != null
+                      && request.resource.data.keys().hasOnly(['senderId', 'text', 'createdAt'])
                       && request.resource.data.senderId == request.auth.uid
+                      && request.resource.data.text is string
+                      && request.resource.data.text.size() > 0
+                      && request.resource.data.text.size() <= 2000
+                      && request.resource.data.createdAt == request.time
                       && isFriendshipAccepted(conversationId)
                       && isFriendshipParticipant(conversationId);
         allow update, delete: if false;

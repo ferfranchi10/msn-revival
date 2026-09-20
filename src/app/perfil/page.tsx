@@ -189,7 +189,7 @@ export default function PerfilPage() {
             onChange={(e) => setDisplayName(e.target.value)}
           />
 
-          <RetroField label="E-mail:" type="email" value={profile.email} disabled />
+          <RetroField label="E-mail:" type="email" value={user?.email ?? ""} disabled />
 
           <label className="mb-4 block text-[15px] text-[#1F2D3D]">
             Estado:
