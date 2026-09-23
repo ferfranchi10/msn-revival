@@ -826,8 +826,13 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
        perfiles viejos que aún lo conserven pueden seguir guardando, y el orden
        entre migración y despliegue de reglas no importa). Los docs existentes
        siguen teniendo el campo hasta correr una **migración con el Admin SDK**
-       que lo borre (script descartable, fuera del repo; primero en solo lectura
-       con conteos): **pendiente**, sin ella el email sigue expuesto.
+       que lo borre: script en `scripts/migrate-remove-email.mjs` (dry-run por
+       defecto, cuenta cuántos perfiles tienen el campo sin tocar nada; con
+       `--apply` lo borra en tandas de 400). **Escrito pero sin ejecutar todavía**
+       — usa las credenciales reales de `.env.local` contra el Firebase de
+       producción (no hay Firebase de prueba separado), así que lo tiene que
+       correr el usuario (o dar el visto bueno explícito para correrlo) después
+       de desplegar esta rama, no antes.
     2. **Mensajes**: `create` exige exactamente `senderId`/`text`/`createdAt`,
        `text` string de 1 a 2000 caracteres (mismo tope que `MAX_MESSAGE_LENGTH`
        de `src/lib/chat.ts`) y `createdAt == request.time`.
