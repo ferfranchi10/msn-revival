@@ -2,19 +2,16 @@
 
 ## Fase actual
 
-**FASE 7 (emoticonos y estética) completada**, verificada en local. FASE 6
-(notificaciones) + FASE 4 (chat en tiempo real) + FASE 5 (zumbido) siguen
-completadas y verificadas en local y en producción
-(https://msn-revival.vercel.app), salvo Web Push (diferido explícitamente a
-FASE 8, ver detalle abajo).
-
-**FASE 8 (PWA) arrancada parcialmente fuera de orden** (PR #8, `62cc5f0`,
-mergeado antes de cerrar FASE 6 y sin documentar en su momento — corregido
-acá): manifest + iconos ya están. Base (SW, instalación, splash, responsive) y
-Web Push (mensaje/zumbido/solicitud) implementados y ya verificados también en
-producción, con cuentas reales en computadora y celulares (2026-09-23). Falta
-todavía verificar la instalación real "Agregar a pantalla de inicio" en
-dispositivos — ver detalle abajo y en TASKS.md.
+**FASE 8 (PWA) completada y verificada**, incluyendo producción y dispositivos
+reales (2026-09-23). Manifest + iconos, service worker, banner de instalación,
+splash, responsive, y Web Push (mensaje/zumbido/solicitud) con las env vars de
+VAPID cargadas en Vercel. Instalación real "Agregar a pantalla de inicio"
+confirmada en Android, iPhone y escritorio. (Arrancó parcialmente fuera de
+orden con el PR #8, `62cc5f0`, mergeado antes de cerrar FASE 6 y sin
+documentar en su momento — corregido acá.) FASE 7 (emoticonos y estética),
+FASE 6 (notificaciones), FASE 4 (chat en tiempo real) y FASE 5 (zumbido)
+también completadas y verificadas en local y en producción
+(https://msn-revival.vercel.app). Ver detalle abajo y en TASKS.md.
 
 Los 3 hallazgos de la auditoría del 2026-09-17 (PR #19, `fix/reglas-seguridad`)
 ya están cerrados: mergeado, deployado, migración de `email` ejecutada y reglas
@@ -769,11 +766,7 @@ auditoría, más abajo.
   (`https://msn-revival.vercel.app`, PR #9 mergeado). Web Push queda para
   FASE 8 (ver detalle arriba). Nada pendiente en manos del usuario para esta
   fase.
-- FASE 8: manifest + iconos (PR #8) mergeados pero sin verificar todavía
-  "Agregar a pantalla de inicio" en un dispositivo real (iPhone/Android). No
-  es urgente porque el resto de la fase (service worker, push) sigue sin
-  empezar; conviene probar la instalación real recién cuando se retome la
-  fase completa.
+- FASE 8: **cerrada del todo**, sin nada pendiente en manos del usuario.
 - FASE 7: **verificada en local**, falta verificar en producción cuando se
   haga el próximo deploy. Nada más pendiente en manos del usuario para esta
   fase (avatar por URL fue una decisión explícita del usuario para no

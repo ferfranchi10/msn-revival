@@ -171,9 +171,8 @@
 - [x] Web Push en producción (Vercel): las 3 env vars de VAPID cargadas
       (2026-09-23) y verificado con cuentas reales en computadora y en
       celulares — notificaciones llegando bien.
-- [ ] Pruebas en iPhone, Android y desktop (instalación real "Agregar a
-      pantalla de inicio" en dispositivos) — no confirmado todavía, distinto
-      de la prueba de Web Push de arriba.
+- [x] Pruebas en iPhone, Android y desktop: instalación real "Agregar a
+      pantalla de inicio" confirmada en los tres (2026-09-23).
 - [x] Responsive de chats verificado con sesión iniciada (375x812 y escritorio).
 
 ## FASE 9 — Test privado
