@@ -9,6 +9,7 @@ import { HeroLogoBox } from "@/components/HeroLogoBox";
 import { LogoMark } from "@/components/LogoMark";
 import { RetroButton } from "@/components/RetroButton";
 import { RetroField } from "@/components/RetroField";
+import { DesktopIcons, Taskbar } from "@/components/RetroDesktop";
 import { RetroWindow } from "@/components/RetroWindow";
 import { AVATARS, DEFAULT_AVATAR_ID } from "@/lib/avatars";
 import { auth, db } from "@/lib/firebase";
@@ -135,8 +136,9 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
-      <RetroWindow title="MSN Revival" contentClassName="flex-1 min-h-0">
+    <div className="msn-wallpaper relative flex min-h-screen w-full flex-1 justify-center overflow-y-auto px-4 py-10 pb-14">
+      <DesktopIcons />
+      <RetroWindow title="MSN Revival">
         <div className="mb-5 flex items-center gap-2">
           <LogoMark size={20} />
           <p className="text-[16px] leading-none">
@@ -220,6 +222,7 @@ export default function RegistroPage() {
           </p>
         </form>
       </RetroWindow>
+      <Taskbar />
     </div>
   );
 }

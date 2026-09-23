@@ -29,6 +29,14 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/* Fondo de escritorio retro (ilustración vectorial propia, no es la foto
+   "Bliss" de Windows XP ni ningún otro asset de Microsoft): cielo, nubes y
+   colina dibujados a mano en public/wallpaper-hills.svg. */
+.msn-wallpaper {
+  background: #6fa8e0 url("/wallpaper-hills.svg") no-repeat center bottom;
+  background-size: cover;
+}
+
 /* Scrollbar clásico de Windows XP tema azul (solo navegadores basados en
    Chromium) — pista y flechas en la misma paleta azul del resto de la app. */
 .retro-scroll::-webkit-scrollbar {
