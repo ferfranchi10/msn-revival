@@ -167,10 +167,13 @@
       solicitud de amistad llegan como notificación aunque la app esté cerrada o
       en segundo plano. Claves VAPID, dispositivos en Firestore (`pushDevices`,
       solo Admin SDK), `/api/push/send` y `/api/push/subscribe`, handlers en el SW,
-      botón en Perfil y respeto de los 3 toggles de notificación. Verificado en
-      local con Chrome real (ver CONTEXT.md). Falta cargar las 3 env vars en Vercel.
-- [ ] Web Push en producción (Vercel) y en iPhone/Android reales.
-- [ ] Pruebas en iPhone, Android y desktop (instalación real en dispositivos).
+      botón en Perfil y respeto de los 3 toggles de notificación.
+- [x] Web Push en producción (Vercel): las 3 env vars de VAPID cargadas
+      (2026-09-23) y verificado con cuentas reales en computadora y en
+      celulares — notificaciones llegando bien.
+- [ ] Pruebas en iPhone, Android y desktop (instalación real "Agregar a
+      pantalla de inicio" en dispositivos) — no confirmado todavía, distinto
+      de la prueba de Web Push de arriba.
 - [x] Responsive de chats verificado con sesión iniciada (375x812 y escritorio).
 
 ## FASE 9 — Test privado

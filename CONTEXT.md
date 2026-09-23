@@ -11,9 +11,10 @@ FASE 8, ver detalle abajo).
 **FASE 8 (PWA) arrancada parcialmente fuera de orden** (PR #8, `62cc5f0`,
 mergeado antes de cerrar FASE 6 y sin documentar en su momento — corregido
 acá): manifest + iconos ya están. Base (SW, instalación, splash, responsive) y
-Web Push (mensaje/zumbido/solicitud) ya implementados y verificados en local;
-falta Web Push en producción y pruebas en dispositivos reales — ver detalle
-abajo y en TASKS.md.
+Web Push (mensaje/zumbido/solicitud) implementados y ya verificados también en
+producción, con cuentas reales en computadora y celulares (2026-09-23). Falta
+todavía verificar la instalación real "Agregar a pantalla de inicio" en
+dispositivos — ver detalle abajo y en TASKS.md.
 
 Los 3 hallazgos de la auditoría del 2026-09-17 (PR #19, `fix/reglas-seguridad`)
 ya están cerrados: mergeado, deployado, migración de `email` ejecutada y reglas
@@ -724,11 +725,17 @@ auditoría, más abajo.
     falso → 401; repetir la misma petición → `ya enviado`; solicitud a un amigo ya
     aceptado, mensaje a un uid sin relación → 403; a uno mismo o tipo inválido →
     400; dos zumbidos seguidos → `demasiado seguido`.
-  - **No verificado todavía**: el envío de solicitud de amistad de punta a punta
-    (solo sus rechazos, no el camino feliz), el clic sobre la notificación, Safari/
-    iPhone (requiere la app instalada), Android, y **producción (Vercel)**.
-    Limitación conocida: el push de zumbido solo tiene el límite de 5 s por par,
-    no verifica que el zumbido exista en Realtime Database.
+  - **Producción (Vercel) verificada (2026-09-23)**: cargadas las 3 env vars de
+    VAPID (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` como Sensitive,
+    `VAPID_SUBJECT`) en Production y Preview, redeploy hecho, y confirmado con
+    cuentas reales en computadora y en celulares (sesión aparte) que las
+    notificaciones llegan bien.
+  - **Sigue sin confirmarse específicamente**: el camino feliz del envío de
+    solicitud de amistad (antes solo se probaron sus rechazos), el clic sobre
+    la notificación abriendo/enfocando la app, y Safari/iPhone en particular
+    (requiere la app instalada — distinto de "un celular real", que sí se
+    probó). Limitación conocida: el push de zumbido solo tiene el límite de
+    5 s por par, no verifica que el zumbido exista en Realtime Database.
 
 ## Archivos clave
 
