@@ -110,8 +110,8 @@ export default function PerfilPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
-      <RetroWindow title="MSN Revival" contentClassName="flex-1 min-h-0">
+    <div className="msn-wallpaper flex min-h-screen w-full flex-1 justify-center overflow-y-auto px-4 py-10">
+      <RetroWindow title="MSN Revival">
         <div className="mb-5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <LogoMark size={20} />

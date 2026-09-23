@@ -95,8 +95,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
-      <RetroWindow title="MSN Revival" contentClassName="flex-1 min-h-0">
+    <div className="msn-wallpaper flex min-h-screen w-full flex-1 justify-center overflow-y-auto px-4 py-10">
+      <RetroWindow title="MSN Revival">
         {/* Wordmark interno, sobre el panel claro (no es una franja de color aparte) */}
         <div className="mb-6 flex items-center gap-2">
           <LogoMark size={22} />

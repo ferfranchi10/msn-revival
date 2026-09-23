@@ -29,6 +29,13 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/* Fondo de escritorio retro (propio, no es un asset de Microsoft): degradé
+   azul con un resplandor radial arriba, en la misma paleta que la ventana. */
+.msn-wallpaper {
+  background:
+    radial-gradient(120% 90% at 50% -10%, #8fb8e8 0%, #5b8cc5 32%, #2e5f9e 62%, #16335f 100%);
+}
+
 /* Scrollbar clásico de Windows XP tema azul (solo navegadores basados en
    Chromium) — pista y flechas en la misma paleta azul del resto de la app. */
 .retro-scroll::-webkit-scrollbar {
