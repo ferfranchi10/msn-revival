@@ -10,8 +10,15 @@ FASE 8, ver detalle abajo).
 
 **FASE 8 (PWA) arrancada parcialmente fuera de orden** (PR #8, `62cc5f0`,
 mergeado antes de cerrar FASE 6 y sin documentar en su momento — corregido
-acá): manifest + iconos ya están. Falta el resto de la fase (service worker,
-push, pruebas en dispositivos) — ver detalle abajo y en TASKS.md.
+acá): manifest + iconos ya están. Base (SW, instalación, splash, responsive) y
+Web Push (mensaje/zumbido/solicitud) ya implementados y verificados en local;
+falta Web Push en producción y pruebas en dispositivos reales — ver detalle
+abajo y en TASKS.md.
+
+Los 3 hallazgos de la auditoría del 2026-09-17 (PR #19, `fix/reglas-seguridad`)
+ya están cerrados: mergeado, deployado, migración de `email` ejecutada y reglas
+nuevas publicadas en producción (2026-09-23). Ver detalle en la sección de
+auditoría, más abajo.
 
 ## Decisiones tomadas
 
@@ -816,8 +823,8 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
        cliente modificado puede mandar mensajes enormes o con fecha falsa.
     3. `usernames`: cualquier usuario autenticado puede crear el doc de
        cualquier username libre sin crear su cuenta (squatting de nombres).
-  - **Corrección de esos 3 hallazgos (rama `fix/reglas-seguridad`) — en el repo,
-    NO desplegada todavía** (las reglas publicadas siguen siendo las anteriores):
+  - **Corrección de esos 3 hallazgos (PR #19, `fix/reglas-seguridad`) — mergeada,
+    deployada y con las reglas nuevas ya publicadas en producción (2026-09-23)**:
     1. **Email**: las reglas no pueden ocultar un campo, así que se atacó el dato.
        El registro ya no guarda `email` en `users/{uid}`; el Perfil muestra el de
        Firebase Auth (`user.email`), que era lo único que lo usaba. Las reglas
@@ -828,11 +835,8 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
        siguen teniendo el campo hasta correr una **migración con el Admin SDK**
        que lo borre: script en `scripts/migrate-remove-email.mjs` (dry-run por
        defecto, cuenta cuántos perfiles tienen el campo sin tocar nada; con
-       `--apply` lo borra en tandas de 400). **Escrito pero sin ejecutar todavía**
-       — usa las credenciales reales de `.env.local` contra el Firebase de
-       producción (no hay Firebase de prueba separado), así que lo tiene que
-       correr el usuario (o dar el visto bueno explícito para correrlo) después
-       de desplegar esta rama, no antes.
+       `--apply` lo borra en tandas de 400). **Ejecutado en producción por el
+       usuario** (`--apply`, 2026-09-23): 11/11 perfiles limpiados.
     2. **Mensajes**: `create` exige exactamente `senderId`/`text`/`createdAt`,
        `text` string de 1 a 2000 caracteres (mismo tope que `MAX_MESSAGE_LENGTH`
        de `src/lib/chat.ts`) y `createdAt == request.time`.
@@ -842,14 +846,18 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
        del mismo uid (esto cierra además la variante de dos perfiles con el
        mismo username, que el hallazgo original no mencionaba). El registro ya
        escribía ambos en un `writeBatch`, no cambia.
-  - **Orden obligatorio de despliegue**: (1) mergear y desplegar la app (para que
-    el registro deje de escribir `email`); (2) migración que borra `email`;
-    (3) `npm run rules:deploy`. Si las reglas salieran antes que la app, un
-    registro nuevo desde el cliente viejo fallaría.
-  - **Verificación**: `npm run rules:check` (compila) y el Perfil sigue mostrando
-    el email desde Auth. **Las reglas nuevas no se probaron en ejecución**: no hay
-    Java para el emulador de Firestore, y compilar solo prueba la sintaxis, no que
-    dejen pasar los casos buenos y bloqueen los malos.
+  - **Orden de despliegue seguido, tal como estaba planeado**: (1) mergear y
+    desplegar la app (PR #19 a `main`, deploy de Vercel confirmado `success`
+    contra `https://msn-revival.vercel.app`); (2) `scripts/migrate-remove-email.mjs
+    --apply` (11/11 perfiles); (3) `npm run rules:deploy` (reglas publicadas,
+    `Deploy complete!`, tanto Firestore como Realtime Database).
+  - **Verificación**: `npm run rules:check` compiló antes de publicar, y
+    `rules:deploy` terminó sin errores para ambas bases. **Las reglas nuevas
+    siguen sin probarse contra casos concretos (bueno/malo) en ejecución**: no
+    hay Java para el emulador de Firestore, así que la única verificación real
+    de comportamiento (no solo sintaxis) queda pendiente para cuando se use la
+    app en producción con las cuentas reales — revisar si algún flujo normal
+    (registro, mensajes, username) empieza a fallar con `permission-denied`.
 - **Hecho (2026-09-20, rama `chore/tests-funciones-puras`)**: tests
   automatizados de las funciones puras, con **Vitest** (`npm run test`, 46 tests
   en 7 archivos junto a cada módulo, `src/lib/*.test.ts[x]`): `getFriendshipId`/
@@ -882,3 +890,34 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
   sección de FASE 2) se rescató a este archivo antes de borrarla. También se
   quitó el worktree `.claude/worktrees/zen-lamport-c934a8` (estaba limpio). Hoy
   el repo solo tiene `main` (más las ramas de trabajo que se abran).
+
+- **UI de contactos y zumbido con arte propio** (rama `feat/ui-zumbido-contactos`,
+  PR #18). Dos cambios independientes hechos juntos:
+  - **"Hombrecito" de estado (`StatusBuddy`, SVG propio)**: la fila de contacto deja
+    de mostrar el avatar y pasa a mostrar una silueta de persona con degradado de
+    color según el estado visible (verde disponible, ámbar con reloj ausente, rojo
+    con signo menos no molestar, gris desconectado), mismo criterio del MSN
+    clásico de mostrar el estado con el ícono antes que con el avatar en la lista.
+    La fila también pasa de dos líneas a una sola: `Nombre (Estado) - mensaje`. El
+    botón "+" de agregar contacto pasa a ícono (mismo estilo de silueta, en azul
+    con un "+" verde) + texto "Agregar un contacto".
+  - **Bug encontrado y corregido de paso**: si la lectura de Firestore o de
+    Realtime Database para un contacto fallaba (perfil borrado, o denegado por
+    reglas), la fila quedaba en "Cargando..." para siempre porque ninguno de los
+    dos listeners tenía callback de error. `FriendPresence` ganó un campo
+    `loaded` (distingue "todavía no llegó la primera lectura" de "llegó y no hay
+    perfil") y ambas suscripciones (`subscribeToRawPresence` en
+    `src/lib/presence.ts`, el listener de `users/{uid}` en
+    `subscribeToFriendPresence`) ahora tratan un error como "perfil inexistente"
+    en vez de no emitir nunca, la fila muestra "Usuario no disponible".
+  - **Zumbido con imagen propia**: el usuario creó dos PNG propios
+    (`public/zumbido.png` para el botón/toast, `public/zumbido-notif.png` 192px
+    cuadrado para el ícono de la notificación push) para reemplazar el emoji del
+    zumbido nativo del sistema, mismo criterio que los sonidos de fases
+    anteriores (arte/sonido retro propio, no assets de terceros ni emoji del
+    sistema operativo). `PushPayload` (`src/lib/pushServer.ts`) ganó un campo
+    opcional `icon`; si falta, el service worker sigue usando el logo de la app
+    (`/manifest-icon/192`) como antes, así que el resto de los tipos de push
+    (mensaje, solicitud de amistad) no cambia.
+  - No se verificó en producción todavía (mergeado a `main` pero sin deploy
+    posterior verificado en vivo).

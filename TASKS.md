@@ -143,6 +143,10 @@
       Sin resize ni minimizar/maximizar de tamaño real, no fue parte del pedido.
 - [x] Barra de desplazamiento rediseñada en la paleta azul de la app, con
       flechas y bisel 3D (antes era beige/tostada y sin flechas).
+- [x] Hombrecito de estado con color propio (`StatusBuddy`, SVG) en la fila de
+      contacto, reemplazando el avatar ahí; fila a una sola línea. Zumbido con
+      imagen propia (`zumbido.png`/`zumbido-notif.png`) en vez del emoji del
+      sistema, en el botón, el toast y el ícono del push.
 
 ## FASE 8 — PWA
 
