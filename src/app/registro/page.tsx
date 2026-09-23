@@ -78,7 +78,8 @@ export default function RegistroPage() {
           displayName: trimmedName,
           username: username.trim(),
           usernameLower,
-          email: email.trim(),
+          // El email NO se guarda acá: `users` es legible por cualquier usuario autenticado
+          // y filtraría el correo de todos. Vive solo en Firebase Auth (`user.email`).
           avatarId,
           status: DEFAULT_STATUS,
           personalMessage: "",

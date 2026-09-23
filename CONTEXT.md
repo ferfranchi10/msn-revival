@@ -816,6 +816,40 @@ sin `dangerouslySetInnerHTML`. Lo que se corrigió en el momento (rama
        cliente modificado puede mandar mensajes enormes o con fecha falsa.
     3. `usernames`: cualquier usuario autenticado puede crear el doc de
        cualquier username libre sin crear su cuenta (squatting de nombres).
+  - **Corrección de esos 3 hallazgos (rama `fix/reglas-seguridad`) — en el repo,
+    NO desplegada todavía** (las reglas publicadas siguen siendo las anteriores):
+    1. **Email**: las reglas no pueden ocultar un campo, así que se atacó el dato.
+       El registro ya no guarda `email` en `users/{uid}`; el Perfil muestra el de
+       Firebase Auth (`user.email`), que era lo único que lo usaba. Las reglas
+       rechazan **crear** un perfil con `email` y **cambiar** ese campo en un
+       `update` (con `diff().affectedKeys()`, no prohibiendo el campo: así los
+       perfiles viejos que aún lo conserven pueden seguir guardando, y el orden
+       entre migración y despliegue de reglas no importa). Los docs existentes
+       siguen teniendo el campo hasta correr una **migración con el Admin SDK**
+       que lo borre: script en `scripts/migrate-remove-email.mjs` (dry-run por
+       defecto, cuenta cuántos perfiles tienen el campo sin tocar nada; con
+       `--apply` lo borra en tandas de 400). **Escrito pero sin ejecutar todavía**
+       — usa las credenciales reales de `.env.local` contra el Firebase de
+       producción (no hay Firebase de prueba separado), así que lo tiene que
+       correr el usuario (o dar el visto bueno explícito para correrlo) después
+       de desplegar esta rama, no antes.
+    2. **Mensajes**: `create` exige exactamente `senderId`/`text`/`createdAt`,
+       `text` string de 1 a 2000 caracteres (mismo tope que `MAX_MESSAGE_LENGTH`
+       de `src/lib/chat.ts`) y `createdAt == request.time`.
+    3. **Usernames**: `usernames/{x}` solo se puede crear si en el mismo batch se
+       crea `users/{uid}` con `usernameLower == x` (`getAfter()`), y a la inversa
+       `users` exige que exista la reserva `usernames/{usernameLower}` a nombre
+       del mismo uid (esto cierra además la variante de dos perfiles con el
+       mismo username, que el hallazgo original no mencionaba). El registro ya
+       escribía ambos en un `writeBatch`, no cambia.
+  - **Orden obligatorio de despliegue**: (1) mergear y desplegar la app (para que
+    el registro deje de escribir `email`); (2) migración que borra `email`;
+    (3) `npm run rules:deploy`. Si las reglas salieran antes que la app, un
+    registro nuevo desde el cliente viejo fallaría.
+  - **Verificación**: `npm run rules:check` (compila) y el Perfil sigue mostrando
+    el email desde Auth. **Las reglas nuevas no se probaron en ejecución**: no hay
+    Java para el emulador de Firestore, y compilar solo prueba la sintaxis, no que
+    dejen pasar los casos buenos y bloqueen los malos.
 - **Hecho (2026-09-20, rama `chore/tests-funciones-puras`)**: tests
   automatizados de las funciones puras, con **Vitest** (`npm run test`, 46 tests
   en 7 archivos junto a cada módulo, `src/lib/*.test.ts[x]`): `getFriendshipId`/
