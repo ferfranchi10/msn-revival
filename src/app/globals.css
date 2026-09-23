@@ -29,11 +29,12 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Fondo de escritorio retro (propio, no es un asset de Microsoft): degradé
-   azul con un resplandor radial arriba, en la misma paleta que la ventana. */
+/* Fondo de escritorio retro (ilustración vectorial propia, no es la foto
+   "Bliss" de Windows XP ni ningún otro asset de Microsoft): cielo, nubes y
+   colina dibujados a mano en public/wallpaper-hills.svg. */
 .msn-wallpaper {
-  background:
-    radial-gradient(120% 90% at 50% -10%, #8fb8e8 0%, #5b8cc5 32%, #2e5f9e 62%, #16335f 100%);
+  background: #6fa8e0 url("/wallpaper-hills.svg") no-repeat center bottom;
+  background-size: cover;
 }
 
 /* Scrollbar clásico de Windows XP tema azul (solo navegadores basados en
