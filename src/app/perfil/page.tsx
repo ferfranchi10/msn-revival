@@ -10,6 +10,7 @@ import { Avatar } from "@/components/Avatar";
 import { LogoMark } from "@/components/LogoMark";
 import { RetroButton } from "@/components/RetroButton";
 import { RetroField } from "@/components/RetroField";
+import { DesktopIcons, Taskbar } from "@/components/RetroDesktop";
 import { RetroWindow } from "@/components/RetroWindow";
 import { AVATARS } from "@/lib/avatars";
 import { auth, db } from "@/lib/firebase";
@@ -110,7 +111,8 @@ export default function PerfilPage() {
   }
 
   return (
-    <div className="msn-wallpaper flex min-h-screen w-full flex-1 justify-center overflow-y-auto px-4 py-10">
+    <div className="msn-wallpaper relative flex min-h-screen w-full flex-1 justify-center overflow-y-auto px-4 py-10 pb-14">
+      <DesktopIcons />
       <RetroWindow title="MSN Revival">
         <div className="mb-5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -270,6 +272,7 @@ export default function PerfilPage() {
           </div>
         </form>
       </RetroWindow>
+      <Taskbar />
     </div>
   );
 }

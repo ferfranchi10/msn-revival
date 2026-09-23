@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { HeroLogoBox } from "@/components/HeroLogoBox";
 import { LogoMark } from "@/components/LogoMark";
+import { DesktopIcons, Taskbar } from "@/components/RetroDesktop";
 import { RetroWindow } from "@/components/RetroWindow";
 import { auth } from "@/lib/firebase";
 
@@ -95,7 +96,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="msn-wallpaper flex min-h-screen w-full flex-1 justify-center overflow-y-auto px-4 py-10">
+    <div className="msn-wallpaper relative flex min-h-screen w-full flex-1 justify-center overflow-y-auto px-4 py-10 pb-14">
+      <DesktopIcons />
       <RetroWindow title="MSN Revival">
         {/* Wordmark interno, sobre el panel claro (no es una franja de color aparte) */}
         <div className="mb-6 flex items-center gap-2">
@@ -188,6 +190,7 @@ export default function LoginPage() {
           </div>
         </form>
       </RetroWindow>
+      <Taskbar />
     </div>
   );
 }

@@ -24,6 +24,7 @@ import { LogoMark } from "@/components/LogoMark";
 import { ProfilePopup } from "@/components/ProfilePopup";
 import { AddContactIcon } from "@/components/StatusBuddy";
 import { RetroField } from "@/components/RetroField";
+import { DesktopIcons, Taskbar } from "@/components/RetroDesktop";
 import { RetroWindow } from "@/components/RetroWindow";
 import { SplashScreen } from "@/components/SplashScreen";
 import { useAuth } from "@/context/AuthContext";
@@ -208,7 +209,8 @@ export default function ContactosPage() {
   }
 
   return (
-    <div className="msn-wallpaper flex min-h-screen w-full flex-1 items-center justify-center overflow-y-auto px-4 py-10">
+    <div className="msn-wallpaper relative flex min-h-screen w-full flex-1 items-center justify-center overflow-y-auto px-4 py-10 pb-14">
+      <DesktopIcons />
       <RetroWindow title="MSN Revival" contentClassName="flex h-[min(560px,calc(100dvh-6rem))] min-h-[320px] flex-col" draggable>
         <div className="mb-2 flex shrink-0 items-center gap-2.5 border-b border-[#C4CBD5] pb-2.5">
           <Avatar
@@ -429,6 +431,7 @@ export default function ContactosPage() {
       {viewingProfileUid && (
         <ProfilePopup uid={viewingProfileUid} onClose={() => setViewingProfileUid(null)} />
       )}
+      <Taskbar />
     </div>
   );
 }
