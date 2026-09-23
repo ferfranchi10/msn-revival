@@ -208,8 +208,8 @@ export default function ContactosPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-1 items-center justify-center overflow-y-auto bg-black px-4 py-10">
-      <RetroWindow title="MSN Revival" contentClassName="flex h-[min(560px,calc(100dvh-6rem))] min-h-[320px] flex-col" draggable>
+    <div className="flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
+      <RetroWindow title="MSN Revival" contentClassName="flex flex-1 min-h-0 flex-col" draggable>
         <div className="mb-2 flex shrink-0 items-center gap-2.5 border-b border-[#C4CBD5] pb-2.5">
           <Avatar
             avatarId={profile.avatarId}

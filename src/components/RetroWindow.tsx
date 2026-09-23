@@ -54,7 +54,7 @@ export function RetroWindow({
   return (
     <div
       ref={draggable ? elementRef : undefined}
-      className="w-full max-w-md overflow-hidden rounded-[6px] border border-[#8fa3c7] shadow-[0_3px_14px_rgba(0,0,0,0.55)]"
+      className="flex w-full flex-1 flex-col overflow-hidden rounded-[6px] border border-[#8fa3c7] shadow-[0_3px_14px_rgba(0,0,0,0.55)]"
       style={{
         fontFamily: "Tahoma, Verdana, Arial, sans-serif",
         ...(draggable && position
