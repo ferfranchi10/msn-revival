@@ -17,6 +17,7 @@ import { auth, db } from "@/lib/firebase";
 import { STATUS_OPTIONS, type UserStatus } from "@/lib/status";
 import { SplashScreen } from "@/components/SplashScreen";
 import { PushToggle } from "@/components/PushToggle";
+import { isValidLastfmUser } from "@/lib/nowPlaying";
 import { disablePush } from "@/lib/pushClient";
 
 /** Acepta http(s) o `data:image/...` (imagen embebida como base64). */
@@ -37,6 +38,9 @@ export default function PerfilPage() {
   const [notifyFriendRequest, setNotifyFriendRequest] = useState(true);
   const [notifyNudge, setNotifyNudge] = useState(true);
   const [notifyNewMessage, setNotifyNewMessage] = useState(true);
+  const [lastfmUsername, setLastfmUsername] = useState("");
+  const [shareNowPlaying, setShareNowPlaying] = useState(true);
+  const [lastfmError, setLastfmError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const initialized = useRef(false);
@@ -58,6 +62,8 @@ export default function PerfilPage() {
       setNotifyFriendRequest(profile.notifyFriendRequest ?? true);
       setNotifyNudge(profile.notifyNudge ?? true);
       setNotifyNewMessage(profile.notifyNewMessage ?? true);
+      setLastfmUsername(profile.lastfmUsername ?? "");
+      setShareNowPlaying(profile.shareNowPlaying ?? true);
       initialized.current = true;
     }
   }, [profile]);
@@ -66,6 +72,13 @@ export default function PerfilPage() {
     e.preventDefault();
     if (!user) return;
     setAvatarUrlError(null);
+    setLastfmError(null);
+
+    const trimmedLastfm = lastfmUsername.trim();
+    if (trimmedLastfm && !isValidLastfmUser(trimmedLastfm)) {
+      setLastfmError("Usuario de Last.fm no válido (2–15 letras, números, - o _).");
+      return;
+    }
 
     const trimmedAvatarUrl = avatarUrl.trim();
     if (trimmedAvatarUrl) {
@@ -87,6 +100,8 @@ export default function PerfilPage() {
         avatarUrl: trimmedAvatarUrl,
         status,
         personalMessage: personalMessage.trim(),
+        lastfmUsername: trimmedLastfm,
+        shareNowPlaying,
         notifyFriendOnline,
         notifyFriendRequest,
         notifyNudge,
@@ -216,6 +231,37 @@ export default function PerfilPage() {
             maxLength={120}
             placeholder="Escuchando música 🎵"
           />
+
+          <div className="mb-5">
+            <p className="mb-1 text-[15px] text-[#1F2D3D]">Música 🎵</p>
+            <div className="flex flex-col gap-2 rounded-[3px] border border-[#C4CBD5] bg-[#F4F6FA] p-3">
+              <p className="text-[12px] text-[#33445A]">
+                Muestra a tus amigos lo que escuchas. Usa tu usuario de Last.fm (gratis en last.fm), que
+                se conecta con Spotify, Apple Music, reproductores de Windows/Mac y del móvil.
+              </p>
+              <input
+                type="text"
+                value={lastfmUsername}
+                onChange={(e) => {
+                  setLastfmUsername(e.target.value);
+                  setLastfmError(null);
+                }}
+                placeholder="Tu usuario de Last.fm"
+                maxLength={15}
+                className="rounded-[3px] border border-[#A7B0BE] bg-white px-3 py-2 text-[13px] text-[#1F2D3D] shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] focus:border-[#3E73B8] focus:outline-none"
+              />
+              {lastfmError && <p className="text-[12px] text-red-600">{lastfmError}</p>}
+              <label className="flex items-center gap-2 text-[14px] text-[#1F2D3D]">
+                <input
+                  type="checkbox"
+                  checked={shareNowPlaying}
+                  onChange={(e) => setShareNowPlaying(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                Mostrar lo que estoy escuchando
+              </label>
+            </div>
+          </div>
 
           <div className="mb-5">
             <p className="mb-2 text-[15px] text-[#1F2D3D]">Notificaciones</p>

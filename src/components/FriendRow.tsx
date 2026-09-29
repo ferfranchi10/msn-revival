@@ -4,6 +4,7 @@ import { type MouseEvent, type ReactNode, useState } from "react";
 import { useFriendPresence } from "@/hooks/useFriendPresence";
 import { StatusBuddy } from "./StatusBuddy";
 import { formatLastSeen } from "@/lib/presence";
+import { getVisibleNowPlaying } from "@/lib/nowPlaying";
 import { getStatus } from "@/lib/status";
 import { ContactContextMenu, type ContextMenuItem } from "./ContactContextMenu";
 
@@ -32,6 +33,7 @@ export function FriendRow({
 
   const status = getStatus(visibleStatus);
   const isOffline = visibleStatus === "offline";
+  const nowPlaying = getVisibleNowPlaying(profile);
 
   function handleContextMenu(e: MouseEvent) {
     if (!contextMenuItems) return;
@@ -52,7 +54,8 @@ export function FriendRow({
       >
         {profile.displayName}
         {visibleStatus !== "online" && <span className="text-[#33445A]/55"> ({status.label})</span>}
-        {!isOffline && profile.personalMessage && (
+        {!isOffline && nowPlaying && <span className="text-[#33445A]/70"> - 🎵 {nowPlaying}</span>}
+        {!isOffline && !nowPlaying && profile.personalMessage && (
           <span className="text-[#33445A]/70"> - {profile.personalMessage}</span>
         )}
         {isOffline && <span className="text-[#33445A]/55"> - {formatLastSeen(lastChanged)}</span>}

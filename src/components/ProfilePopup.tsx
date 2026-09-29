@@ -1,6 +1,7 @@
 "use client";
 
 import { useFriendPresence } from "@/hooks/useFriendPresence";
+import { getVisibleNowPlaying } from "@/lib/nowPlaying";
 import { formatLastSeen } from "@/lib/presence";
 import { getStatus } from "@/lib/status";
 import { Avatar } from "./Avatar";
@@ -11,6 +12,7 @@ export function ProfilePopup({ uid, onClose }: { uid: string; onClose: () => voi
   if (!profile) return null;
 
   const status = getStatus(visibleStatus);
+  const nowPlaying = visibleStatus === "offline" ? null : getVisibleNowPlaying(profile);
 
   return (
     <div
@@ -29,6 +31,7 @@ export function ProfilePopup({ uid, onClose }: { uid: string; onClose: () => voi
             {profile.personalMessage && (
               <p className="text-[12px] italic text-[#33445A]">&quot;{profile.personalMessage}&quot;</p>
             )}
+            {nowPlaying && <p className="text-[12px] text-[#33445A]">🎵 Escuchando: {nowPlaying}</p>}
             {visibleStatus === "offline" && (
               <p className="text-[11px] text-[#33445A]/50">{formatLastSeen(lastChanged)}</p>
             )}
