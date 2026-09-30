@@ -9,6 +9,7 @@ import { MessageManager } from "@/components/MessageManager";
 import { FriendRequestManager } from "@/components/FriendRequestManager";
 import { ChatManager } from "@/components/ChatManager";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { NowPlayingManager } from "@/components/NowPlayingManager";
 import { PushSync } from "@/components/PushSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <FriendRequestManager />
             <ChatManager />
             <PushSync />
+            <NowPlayingManager />
             <InstallPrompt />
           </ChatProvider>
         </AuthProvider>

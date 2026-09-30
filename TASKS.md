@@ -175,6 +175,16 @@
       pantalla de inicio" confirmada en los tres (2026-09-23).
 - [x] Responsive de chats verificado con sesión iniciada (375x812 y escritorio).
 
+## Extra — "Escuchando ahora" 🎵
+
+- [x] Perfil: usuario de Last.fm + toggle "Mostrar lo que estoy escuchando".
+- [x] `/api/now-playing` (servidor, requiere `LASTFM_API_KEY`) y `NowPlayingManager`
+      (consulta cada 30 s con la app abierta y publica `nowPlaying` en el perfil).
+- [x] Los amigos lo ven en la fila de contacto (reemplaza el mensaje personal) y en la
+      ficha; caduca a los 6 min sin refrescar.
+- [ ] Pendiente del usuario: crear la clave en last.fm/api/account/create y cargar
+      `LASTFM_API_KEY` en `.env.local` y en Vercel.
+
 ## FASE 9 — Test privado
 
 - [ ] Grupo de prueba de 5–15 personas, lista de bugs.
